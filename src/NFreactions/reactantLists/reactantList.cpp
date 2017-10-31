@@ -218,9 +218,10 @@ void ReactantList::removeMappingSet(unsigned int mappingSetId)
 void ReactantList::printDetails() const
 {
 	//Used for debuggin'...
-	cout<<"ReactantList that contains: "<<size()<<" MappingSets and has a capacity for "<<capacity<<" total sets."<<endl;
+	cout<<"ReactantList "<< ts->getTemplateMolecule(reactantIndex)->getPatternString() << "  contains: "<<size()<<" MappingSets and has a capacity for "<<capacity<<" total sets."<<endl;
 
-	for(int i=0; i<capacity; i++)
+	int n_printItems = (capacity <= 3?capacity: 3); //Razi changed to rpint a few items
+	for(int i=0; i<n_printItems; i++)
 	{
 		if(i<10) cout<<" ";
 		cout<<"["<<i<<"]: "<<msPositionMap[i];

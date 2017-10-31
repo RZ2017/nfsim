@@ -31,7 +31,6 @@ RM := rm -rf
 -include src/NFcore/moleculeLists/subdir.mk
 -include src/NFcore/subdir.mk
 -include src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)

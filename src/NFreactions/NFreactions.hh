@@ -37,7 +37,7 @@ namespace NFcore
 
 	/*!
 	 	Some very simple initial testing and debugging of ReactantLists and the rest of the
-	 	mapping functions unter NFreactions
+	 	mapping functions under NFreactions
 	    @author Michael Sneddon
 	 */
 	void test_simple();

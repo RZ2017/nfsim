@@ -1,6 +1,6 @@
 #include <iostream>
 #include "observable.hh"
-
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -143,6 +143,7 @@ void Observable::addReferenceToMyself(mu::Parser *p)
 }
 void Observable::addReferenceToMyself(string referenceName, mu::Parser *p)
 {
+	if(RAZI_DEBUG & CREATE_OBS) cout<<"OBS:"<<this->getName()<< " tries to add a reference: "<< referenceName <<"  to function:"<< p->GetExpr()<<endl;
 	p->DefineVar(referenceName,&count);
 }
 void Observable::addDependentRxn(ReactionClass *r)
@@ -240,7 +241,12 @@ int MoleculesObservable::isObservable(Molecule *m) const
 		if ( templateMolecules[t]->compare(m) ) {
 			//cout<<"  adding one"<<endl;
 			matches += m->getPopulation();
-			//return 1;
+#ifdef FIX_OBS_COUNT
+			//Razi: Later check:
+			//It seems to be problematic in some cases, for instance a molecule of type X(P~Phos) may be counted twice for an observable of type X(p~Phos,w!1).W(a!1,b!2).X(p~Phos,w!2)
+			//Razi: we may need to break after finding the first molecule
+			break;
+#endif
 		}
 		//else { cout<<"  nothing."<<endl; }
 	}
@@ -345,6 +351,13 @@ int SpeciesObservable::isObservable(Complex *c) const
 		if(relation[t]==NO_RELATION) {
 			for(c->molIter=c->complexMembers.begin(); c->molIter!=c->complexMembers.end();c->molIter++) {
 				//For each template, we only have to find one match, then we match for sure.
+#ifdef FIX_OBS_COUNT
+				cout<<"Later check SpeciesObservable::isObservable\n"; mypause(-1);
+//Razi: It looks like that if a molecule in a complex matches a template in an species observable, we are counting it
+//So if the observable is X(a~p,b!1).Y(c!1) and the complex is Z(a!1).Y(c!1) we are adding the number of matches due to the matching of molecule Y, which is not correct
+//Check later to make sure.
+				//
+#endif
 				if ( templateMolecules[t]->compare(*(c->molIter)) ) {
 					matches += (*(c->molIter))->getPopulation();
 					break;

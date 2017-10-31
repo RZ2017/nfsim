@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "templateMolecule.hh"
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
+
 
 using namespace std;
 using namespace NFcore;
@@ -134,6 +136,38 @@ string TemplateMolecule::getMoleculeTypeName() const {
 }
 
 
+
+#ifdef RHS_FUNC //Razi: added to support RHS functions
+void TemplateMolecule::addMapGenerator(MapGenerator *mg) {
+	addMapGenerator(mg, false);
+}
+
+
+void TemplateMolecule::addMapGenerator(MapGenerator *mg, bool RHSfunc) {
+
+	if (RHSfunc){
+		return; //Razi: the following code is not required !!!
+		MapGenerator ** newMapGenerators = new MapGenerator*[n_RHSmapGenerators+1];
+			for(int i=0; i<n_RHSmapGenerators; i++) {
+				newMapGenerators[i]=RHSmapGenerators[i];
+			}
+			newMapGenerators[n_RHSmapGenerators]=mg;
+			delete [] RHSmapGenerators;
+			RHSmapGenerators = newMapGenerators;
+			n_RHSmapGenerators++;
+	}else{
+		MapGenerator ** newMapGenerators = new MapGenerator*[n_mapGenerators+1];
+		for(int i=0; i<n_mapGenerators; i++) {
+			newMapGenerators[i]=mapGenerators[i];
+		}
+		newMapGenerators[n_mapGenerators]=mg;
+		delete [] mapGenerators;
+		mapGenerators = newMapGenerators;
+		n_mapGenerators++;
+	}
+}
+
+#else
 void TemplateMolecule::addMapGenerator(MapGenerator *mg) {
 	MapGenerator ** newMapGenerators = new MapGenerator*[n_mapGenerators+1];
 	for(int i=0; i<n_mapGenerators; i++) {
@@ -144,7 +178,7 @@ void TemplateMolecule::addMapGenerator(MapGenerator *mg) {
 	mapGenerators = newMapGenerators;
 	n_mapGenerators++;
 }
-
+#endif
 
 
 
@@ -213,6 +247,8 @@ void TemplateMolecule::addComponentConstraint(string cName, int stateValue) {
 	compStateConstraint_Constraint=newConstraint_Constraint;
 	n_compStateConstraint++;
 	compIsAlwaysMapped[compIndex]=true;
+	if (RAZI_DEBUG & CREATE_TEMPLATES) {cout<< "\tAdd Constraint to Template-ID:"<< this->uniqueTemplateID  <<" M-Type:"<<this->moleculeType->getName()<< "   Component["<< compIndex <<"]:\"" << cName <<"\", new state:"<< stateValue <<"   Total Const:" << n_compStateConstraint<<endl;}
+
 }
 void TemplateMolecule::addComponentExclusion(string cName, string stateName) {
 	if(moleculeType->isEquivalentComponent(cName)) {
@@ -302,9 +338,9 @@ void TemplateMolecule::printDetails() {
 }
 
 void TemplateMolecule::printDetails(ostream &o) {
-	o<<"-----------------------------\n";
-	o<<"TemplateMolecule of type:   "<< moleculeType->getName();
-	o<<", with id: "<<this->uniqueTemplateID;
+	o<<"---------------------------------------------------\n";
+	o<<"Deatils of TemplateMolecule of type:   "<< moleculeType->getName();
+	o<<", with id: "<<this->uniqueTemplateID <<" is:";
 
 	o<<"\n  Connected-to:                       ";
 	if(n_connectedTo==0)o<<"none";
@@ -372,7 +408,7 @@ void TemplateMolecule::printDetails(ostream &o) {
 	o<<"\n  Map Generators:                      ";
 	o<<n_mapGenerators<<" generators.";
 
-	o<<endl;
+	o<<"\n---------------------------------------------------\n";
 	o<<endl;
 
 }
@@ -542,9 +578,11 @@ void TemplateMolecule::bind(TemplateMolecule *t1, string bSiteName1, string comp
 {
 	if(t1->moleculeType->isEquivalentComponent(bSiteName1)) {
 		t1->addSymBond(bSiteName1, compId1, t2, bSiteName2);
+		if(RAZI_DEBUG & CREATE_TEMPLATES){cout<<"\tAdd Symmetric Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< "  site:"<< bSiteName2<<endl;}
 		//cout<<"cannot handle symmetric binding yet."<<endl;
 	} else {
 		t1->addBond(bSiteName1, t2, bSiteName2);
+		if(RAZI_DEBUG & CREATE_TEMPLATES){cout<<"\tAdd Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< " site:"<< bSiteName2<<endl;}
 	}
 
 	if(t2->moleculeType->isEquivalentComponent(bSiteName2)) {

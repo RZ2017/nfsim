@@ -7,7 +7,7 @@
 
 
 #include "NFfunction.hh"
-
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 
 
@@ -165,6 +165,11 @@ LocalFunction::LocalFunction(System *s,
 		this->typeII_localFunctionIndex.push_back(index);
 	}
 
+	if (RAZI_DEBUG & CREATE_FUNC){
+		cout<<"\t\t Creating Local Function Object for:\t"<<this->name<<" expression:" << this->originalExpression<<" parsedexp:"<<  this->parsedExpression<< endl;
+		cout<<"\t\t\t Collected Type-II Molecules are:      \t";		for(unsigned int an = 0; an < addedMoleculeTypes.size(); an++) cout<< addedMoleculeTypes[an]->getName() << ", "; cout<<endl;
+		cout<<"\t\t\t Local-Func Index in Type-II Mols are: \t";		for(unsigned int an = 0; an < addedMoleculeTypes.size(); an++) cout<< typeII_localFunctionIndex[an] << ", "; cout<<endl;
+	}
 }
 
 // set/get whether this evaluates on complex complex
@@ -184,27 +189,38 @@ void LocalFunction::setEvaluateComplexScope( bool val ) {
 
 
 void LocalFunction::prepareForSimulation(System *s) {
+	bool verbose = false;
+	if (RAZI_DEBUG & CREATE_FUNC)
+		verbose = s->getverbose();
+
 
 	//Finally, we can create the local function
 	try {
 		p=FuncFactory::create();
 
+		if (verbose){  cout<<"Preparing local function for simulation. Func:"<< this->name<<endl; mypause(-1);}
+
 		//Give the local observable to the function so it can be used
 		for(unsigned int i=0; i<n_varRefs; i++) {
 			if(this->varRefScope[i]==-1) { //for global variables, use the global observable
 				s->getObservableByName(this->varObservableNames[i])->addReferenceToMyself(this->varRefNames[i],p);
+				if (verbose)  cout<<"\tSet value for global varRefs["<<i<<"]:"<< varRefNames[i]<< " corresponding to observable:"<<varObservableNames[i] <<endl;
 			} else { //for local observables, use this function's observable
 				this->varLocalObservables[i]->addReferenceToMyself(this->varRefNames[i],p);
+				if(verbose);  cout<<"\tSet value for local varRefs["<<i<<"]:"<< varRefNames[i] <<endl;
 			}
 		}
 
 		//Set the constant values
 		for(unsigned int i=0; i<this->n_params; i++) {
 			p->DefineConst(this->paramNames[i],s->getParameter(paramNames[i]));
+			if (verbose)  cout<<"\tParam:"<<paramNames[i] <<" Value:" << s->getParameter(paramNames[i]) <<endl;
 		}
 
 		//Finally, we can set the expression
 		p->SetExpr(this->parsedExpression);
+		if(verbose){ cout<<"\tExpression:"<<this->parsedExpression<<endl;}
+
 
 	//Catch anything that goes astray
 	} catch (mu::Parser::exception_type &e) {
@@ -218,17 +234,37 @@ void LocalFunction::prepareForSimulation(System *s) {
 
 double LocalFunction::getValue(Molecule *m, int scope)
 {
+	bool verbose = false;
+	if (RAZI_DEBUG & CHECK_LBG)
+		verbose = this->system->getverbose();
+
 	//cout<<"getting local function value: "<<this->nicename<<endl;
 	//cout<<"using molecule: "<<m->getUniqueID()<<" with scope: "<<scope<<endl;
+
+	if (verbose){
+		cout<<"getting local function value: "<<this->nicename<<endl;
+		cout<<"using molecule: "<<m->getUniqueID()<<" with scope: "<<scope<<endl; mypause(10000);
+	}
 
 	if(scope==LocalFunction::SPECIES) {
 		//cout<<"Species scope"<<endl;
 		for(unsigned int ti=0; ti<typeI_mol.size(); ti++) {
+			if (verbose){cout << "this molecule has type: " << m->getMoleculeTypeName() << endl;			cout << "current typeI_mol is: " << typeI_mol.at(ti)->getName() << endl;}
 			//cout << "this molecule has type: " << m->getMoleculeTypeName() << endl;
 			//cout << "current typeI_mol is: " << typeI_mol.at(ti)->getName() << endl;
 			if(m->getMoleculeType()==typeI_mol.at(ti)) {
+				if (verbose){
+					//cout<<"Evaluating LocalFunction Scope:"<<scope<< ", Function:"<< nicename << ", Expression"<< originalExpression << ", Molecule:"<<m->getMoleculeTypeName()<<" Scope:"<<scope<< " Error: No typeI_molecule is created for this function."<<endl;
+					cout<<"Evaluating LocalFunction Scope:"<<scope<< ", Function:"<< nicename << ", Expression"<< originalExpression << ", Molecule:"<<m->getMoleculeTypeName()<<" Scope:"<<scope<< " TypeI_molecule is created for this function."<<endl;
+					cout<<"Type I Molecule found at position: "<<ti<<"/"<<typeI_mol.size()<<"    function evaluated: "<< m->getLocalFunctionValue(typeI_localFunctionIndex.at(ti)) << endl;
+				}
 				return m->getLocalFunctionValue(typeI_localFunctionIndex.at(ti));
 			}
+		}
+		if (verbose){
+			cout<<"Internal error in LocalFunction::evaluateOn()! Scope:"<<scope<< ", Function:"<< nicename << ", Expression"<< originalExpression << ", Molecule:"<<m->getMoleculeTypeName()<<" Scope:"<<scope<< " Error: No typeI_molecule is created for this function."<<endl;
+			cout<<"Type I Molecules List includes "<<typeI_mol.size()<<"items."<<endl;
+			exit(1);
 		}
 		LocalFunctionException lfe;
 		lfe.setType1_Mol(&typeI_mol);
@@ -287,6 +323,7 @@ double LocalFunction::evaluateOn(Molecule *m, int scope) {
 	if(scope==LocalFunction::SPECIES) {
 
 		if(!isEverEvaluatedOnSpeciesScope) {
+			//cout <<"LocalFunction::evaluateOn Error. Is not evaluated yet.\n";
 			return 0;
 		}
 
@@ -392,6 +429,134 @@ double LocalFunction::evaluateOn(Molecule *m, int scope) {
 
 	return -1;
 }
+
+
+
+#ifdef RHS_FUNC //Razi:  Added to support RHS functions
+//Razi: this is a simpler version of evaluateOn, without interfering with observables
+//here we are evaluating the local function on a test molecule and get the result
+double LocalFunction::evaluateOnTestMol(Molecule *m, int scope, bool verbose) {
+
+	if (verbose) {cout<<"evaluating local function: "<<this->nicename<<"using molecule: "<<m->getUniqueID()<<" with scope: "<<scope<<endl;}
+	//this->printDetails(m->getMoleculeType()->getSystem());
+
+
+	if(scope==LocalFunction::SPECIES) {
+
+		if(!isEverEvaluatedOnSpeciesScope) {
+			//cout <<"LocalFunction::evaluateOn Error. Is not evaluated yet.\n";
+			return 0;
+		}
+
+		molList.clear();
+
+		//cout<<"from local function"<<endl;
+		m->traverseBondedNeighborhood(molList,ReactionClass::NO_LIMIT);
+
+
+		//First, clear out all the observables
+		for(unsigned int i=0; i<n_varRefs; i++) {
+			if(varLocalObservables[i]!=0) {
+				varLocalObservables[i]->clear();
+			}
+		}
+
+		//recompute the observables
+		int matches = 0;
+		for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+			if (verbose) cout<<"checking molecule:" << (*molIter)->getMoleculeTypeName()<<endl;
+			//Loop over each observable
+			for(unsigned int i=0; i<n_varRefs; i++) {
+				if(varLocalObservables[i]!=0) {   //If it is local
+
+					//If the observable is of type MOLECULES
+					if(varLocalObservables[i]->getType()==Observable::MOLECULES) {
+						matches = varLocalObservables[i]->isObservable((*molIter));
+						if (verbose) cout<<"match:" << matches<< "varLocalObservables["<<i<<"]:"<< varLocalObservables[i] << endl;
+						varLocalObservables[i]->straightAdd(matches);
+						if (verbose) cout<<" Updated varLocalObservables["<<i<<"]:"<< varLocalObservables[i] << endl;
+					}
+					//If the observables is of a different type
+					else {
+						cerr<<"Error in LocalFunction::evaluateOn()! cannot handle Species observable when"<<endl;
+						cerr<<"evaluating on a single molecule."<<endl;
+						exit(1);
+					}
+				}
+			}
+
+		}
+
+		//evaluate the function
+		double newValue = FuncFactory::Eval(p);
+		if (verbose) {cout<<"new Value: " << newValue << endl;}
+
+
+		//Here we have to notify the type I molecules that this function has changed
+		//Update the molecules (Type I) that needed this function evaluated...
+		for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+			for(unsigned int ti=0; ti<typeI_mol.size(); ti++) {
+				if((*molIter)->getMoleculeType()==typeI_mol.at(ti)) {
+					(*molIter)->setLocalFunctionValue(newValue,this->typeI_localFunctionIndex.at(ti));
+					//(*molIter)->updateDORRxnValues(); //Razi: no need for this step, when evaluating the local function on test molecule
+				}
+			}
+		}
+
+		//cout<<"*"<<this->name<<" "<<newValue<<"\n";
+		return newValue;
+
+	} else if(scope==LocalFunction::MOLECULE) {
+		//cout<<"evaluating on Molecule scope."<<endl;
+
+
+		int matches = 0;
+		for(unsigned int i=0; i<n_varRefs; i++) {
+			if(varLocalObservables[i]!=0) {   //If it is local
+				if(varLocalObservables[i]->getType()==Observable::MOLECULES) {
+					varLocalObservables[i]->clear();  //clear it first
+					matches = varLocalObservables[i]->isObservable(m);
+					for(int k=0; k<matches; k++) {
+						varLocalObservables[i]->straightAdd();
+					}
+				} else {
+					cerr<<"Error in LocalFunction::evaluateOn()! cannot handle Species observable when"<<endl;
+					cerr<<"evaluating on a single molecule."<<endl;
+					exit(1);
+				}
+			}
+		}
+
+		//Recalculate the function
+
+		double newValue = FuncFactory::Eval(p);
+		//cout<<this->name<<" "<<newValue<<"\n";
+
+/*		razi: no need to this step, we just directly use new value
+		//Update the function values
+		for(unsigned int ti=0; ti<typeI_mol.size(); ti++) {
+			if(m->getMoleculeType()==typeI_mol.at(ti)) {
+				m->setLocalFunctionValue(newValue,this->typeI_localFunctionIndex.at(ti));
+				//m->updateDORRxnValues(); //Razi: no need for this step, when evaluating the local function on test molecule
+			}
+		}
+*/
+
+		//cout<<name<<" "<<newValue<<"\n";
+	//	this->printDetails(m->getMoleculeType()->getSystem());
+		return newValue;
+
+
+	} else {
+		cout<<"Internal error in LocalFunction::evaluateOn()! trying to evaluate a function with unknown scope."<<endl;
+		exit(1);
+
+	}
+
+	return -1;
+}
+#endif
+
 
 //This version accepts a complex and evaluates the LocalFunction with SPECIES scope.
 double LocalFunction::evaluateOn(Complex *c) {

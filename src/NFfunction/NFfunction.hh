@@ -4,6 +4,7 @@
 
 #include "muParser/muParser.h"
 #include "../NFcore/NFcore.hh"
+#include "../NFutil/setting.hh"
 
 
 using namespace std;
@@ -21,7 +22,7 @@ namespace NFcore {
 	    Built from the muParser freeware package, this factory creates Parser objects
 	    that can be used to evaluate arbitrary functions.  The function to evaluate
 	    is given as a string (which can contain the given functions or constants below,
-	    case sensitive) along with pointers to particular varables that exist.  The Parser,
+	    case sensitive) along with pointers to particular variables that exist.  The Parser,
 	    when initialized, translates the string into bytecode that can be evaluated fast.
 	    At runtime, the bytecode that was created can be evaluated and every time it is
 	    evaluated, it uses the current value of the given pointers to variables.  Thus,
@@ -122,7 +123,7 @@ namespace NFcore {
 			/*!
 				Creates a GlobalFunction with the given variables (which should be Observable objects
 				that the System has) as well as a set of parameter values.  Note that creating a GlobalFunction
-				does not initialize its parser.  The initialize, you have to call the prepareForSimulation() function
+				does not initialize its parser.  To initialize, you have to call the prepareForSimulation() function
 				which is currently handled by the System.
 			*/
 			GlobalFunction(string name,
@@ -278,6 +279,10 @@ namespace NFcore {
 
 			double getValue(Molecule *m, int scope);
 			double evaluateOn(Molecule *m, int scope);
+#ifdef RHS_FUNC //Razi:  Added to support RHS functions
+			double evaluateOnTestMol(Molecule *m, int scope, bool verbose);
+#endif
+
 			// this version evaluates local fcn on a complex with SPECIES scope
 			double evaluateOn(Complex *c);
 
@@ -287,6 +292,9 @@ namespace NFcore {
 
 			static const int SPECIES = 0;
 			static const int MOLECULE = 1;
+			static const int RHS_SPECIES = 2;
+			static const int RHS_MOLECULE = 3;
+
 
 			mu::Parser *p;
 		protected:
@@ -361,6 +369,14 @@ namespace NFcore {
 
 				void prepareForSimulation(System *s);
 
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+				static const int EvalGlobalPart = 1;
+				static const int EvalConditionalPart = 2;
+				static const int EvalBothParts = 3;
+
+				void setRHSFlag(bool val); //set to true for RHS, default: false
+				double evaluateOnProduct(Molecule * mol, int scope, int evaluationType, bool verbose);
+#endif
 
 				void setGlobalObservableDependency(ReactionClass *r, System *s);
 
@@ -372,6 +388,92 @@ namespace NFcore {
 				string getArgName(int aIndex) const;
 
 				void addTypeIMoleculeDependency(MoleculeType *mt);
+
+
+			protected:
+
+				string name;
+				string originalExpression;
+				string parsedExpression;
+
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+				bool RHS;
+#endif
+
+				unsigned int n_allFuncs;
+				string * allFuncNames;
+
+
+				unsigned int n_args;
+				string * argNames;
+
+				unsigned int n_params;
+				string *paramNames;
+
+				//here are the referenced global functions
+				int n_gfs;
+				string * gfNames;
+				GlobalFunction ** gfs;
+				double * gfValues;
+
+				//stores list of all local functions
+				int n_lfs;
+				string * lfNames;
+				LocalFunction ** lfs;
+
+
+				int n_reactantCounts;
+				double * reactantCount;
+
+				//stores list of all local functions and how they are referenced
+				int n_refLfs;
+				int *refLfInds;
+				string *refLfRefNames;
+				int *refLfScopes;
+				double * refLfValues;
+
+				mu::Parser *p;
+		};
+}
+
+/*
+
+#ifdef RHS_FUNC
+	class RHSFunction {
+		public:
+			static const int EvalGlobalPart = 1;
+			static const int EvalConditionalPart = 2;
+			static const int EvalBothParts = 3;
+
+		RHSFunction(System *s,
+						string name,
+						string expression,
+						vector <string> &functions,
+						vector <string> & argNames,
+						vector <string> &paramNames);
+				~RHSFunction();
+
+
+				string getName() const {return name;};
+
+				void updateParameters(System *s);
+
+				void finalizeInitialization(System *s);
+
+				void prepareForSimulation(System *s);
+
+
+				void setGlobalObservableDependency(ReactionClass *r, System *s);
+
+				//double evaluateOn(Molecule **molList, int *scope, int *curReactantCounts, int n_reactants);
+				double evaluateOn(Molecule * mol, int scope, int evaluationType);
+
+				void printDetails(System *s);
+
+				int getNumOfArgs() const;
+				string getArgName(int aIndex) const;
+
+				//void addTypeIMoleculeDependency(MoleculeType *mt);
 
 
 			protected:
@@ -415,12 +517,10 @@ namespace NFcore {
 
 				mu::Parser *p;
 		};
-
-
-
-
+#endif
 
 }
+*/
 
 
 

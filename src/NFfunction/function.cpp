@@ -1,4 +1,5 @@
 #include "NFfunction.hh"
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 
 
@@ -56,6 +57,7 @@ void GlobalFunction::prepareForSimulation(System *s)
 {
 	try {
 		p=FuncFactory::create();
+		//check to make sure that all variables are valid observables
 		for(unsigned int vr=0; vr<n_varRefs; vr++)
 		{
 			if(varRefTypes[vr]=="Observable") {
@@ -80,6 +82,8 @@ void GlobalFunction::prepareForSimulation(System *s)
 			p->DefineConst(paramNames[i],s->getParameter(paramNames[i]));
 		}
 		p->SetExpr(this->funcExpression);
+
+		if(s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)){ cout<<"Preparing for simulation: Global func:"<<this->getName()<<"  Expression:"<<this->funcExpression; this->printDetails();}
 
 	}
 	catch (mu::Parser::exception_type &e)

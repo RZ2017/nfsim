@@ -173,6 +173,16 @@ namespace NFcore
 			/*!	Indicates a population decrement transform */
 			static const unsigned int DECREMENT_POPULATION = 10;
 
+/*
+
+#ifdef RHS_FUNC //razi added
+			!	Return a pointer to the transformation that is needed by a RHS local function
+			static Transformation * genRHSFunctionReference(string PointerName, int type, TemplateMolecule *tm);
+			static const unsigned int RHS_FUNCTION_REFERENCE = 11;
+			////////////////////////////////
+#endif
+*/
+
 	};
 
 

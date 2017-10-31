@@ -142,6 +142,7 @@
 
 #include "NFsim.hh"
 
+#include "./NFutil/setting.hh"  //razi added for test purpose 2017-3-29
 
 #include <iostream>
 #include <string>
@@ -191,6 +192,9 @@ int main(int argc, char *argv[])
 
 	string versionNumber = "1.12.1";
 	cout<<"starting NFsim v"+versionNumber+"..."<<endl<<endl;
+	cout<<"This program is under modification...\n";
+
+
 	clock_t start,finish;
 	double time;
 	start = clock();
@@ -200,13 +204,30 @@ int main(int argc, char *argv[])
     // Begin Execution
 	bool parsed = false;
 	bool verbose = false;
+#ifdef RHS_FUNC  //razi added to check reaction output products
+	bool check_products = false;
+#endif
 	map<string,string> argMap;
 	if(NFinput::parseArguments(argc, const_cast<const char**>(argv), argMap))
 	{
+		if ((RAZI_DEBUG) & SHOW_ARGS){
+			map<string,string>::iterator it;
+			for (it = argMap.begin(); it != argMap.end(); ++it){
+				cout<<"argMap=["<< it->first <<" , " << it->second <<" ];\n";
+			} mypause(6);
+		}
+
 		//First, find the arguments that we might use in any situation
 		if(argMap.find("v")!=argMap.end()) {
 			verbose = true;
 		}
+
+		//First, find the arguments that we might use in any situation
+		if(argMap.find("co")!=argMap.end()) {
+			cout<<"reaction outputs will be checked to avoid potential rings.\n";
+			check_products = true;
+		}
+
 		if(argMap.find("seed")!= argMap.end()) {
 			int seed = abs(NFinput::parseAsInt(argMap,"seed",0));
 			NFutil::SEED_RANDOM(seed);
@@ -248,6 +269,9 @@ int main(int argc, char *argv[])
 		{
 			System *s = initSystemFromFlags(argMap, verbose);
 			if(s!=NULL) {
+#ifdef RHS_FUNC  //razi added to check reaction output products
+				s->set_check_products(check_products);
+#endif
 				runFromArgs(s,argMap,verbose);
 			}
 			parsed = true;
@@ -313,6 +337,16 @@ int main(int argc, char *argv[])
     finish = clock();
     time = (double(finish)-double(start))/CLOCKS_PER_SEC;
     cout<<endl<<"done.  Total CPU time: "<< time << "s"<<endl<<endl;
+
+
+#ifdef RAZI_VER
+    //int tempvar; cin>>tempvar; //A.Razi added for test
+    //wait 2 seconds
+    cout<<"waiting 2 seconds ..."<<endl;
+    clock_t start_time = clock();
+    clock_t end_time = 2000 + start_time;
+    while(clock() != end_time);
+#endif
     return 0;
 }
 

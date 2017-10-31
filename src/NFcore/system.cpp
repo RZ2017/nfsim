@@ -10,6 +10,12 @@
 #include "../NFscheduler/NFstream.h"
 #include "../NFscheduler/Scheduler.h"
 
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
+
+
+
+
+
 #define ATOT_TOLERANCE 1e-9
 
 using namespace std;
@@ -40,6 +46,9 @@ System::System(string name)
 	ds=0;
 	selector = 0;
 	csvFormat = false;
+#ifdef RHS_FUNC  //razi added to check reaction output products
+	check_products=false;
+#endif
 }
 
 
@@ -67,6 +76,10 @@ System::System(string name, bool useComplex)
 	ds=0;
 	selector = 0;
 	csvFormat = false;
+#ifdef RHS_FUNC  //razi added to check reaction output products
+	check_products=false;
+#endif
+
 }
 
 System::System(string name, bool useComplex, int globalMoleculeLimit)
@@ -92,6 +105,9 @@ System::System(string name, bool useComplex, int globalMoleculeLimit)
 	ds=0;
 	selector = 0;
 	csvFormat = false;
+#ifdef RHS_FUNC  //razi added to check reaction output products
+	check_products=false;
+#endif
 }
 
 
@@ -422,7 +438,7 @@ void System::prepareForSimulation()
 {
 	this->selector = new DirectSelector(allReactions);
 
-	cout<<"preparing simulation..."<<endl;
+	cout<<"\n\nPreparing Simulation..."<<endl;
 	//Note!!  : the order of preparing the system matters!  You have to prepare
 	//some things before others, because certain things require other
 
@@ -433,23 +449,27 @@ void System::prepareForSimulation()
 	//}
 
   	//First, we have to prep all the functions...
+	if(verbose && (RAZI_DEBUG & CREATE_FUNC)) {cout<<"System: Preparing "<< globalFunctions.size()<<" global functions ...";   };
   	for( functionIter = globalFunctions.begin(); functionIter != globalFunctions.end(); functionIter++ )
   		(*functionIter)->prepareForSimulation(this);
 
   	//cout<<"here 1..."<<endl;
 
+	if(verbose && (RAZI_DEBUG & CREATE_FUNC)) {cout<<"System: Preparing  "<< localFunctions.size() <<" local functions ..."; };
   	for( int f=0; f<localFunctions.size(); f++)
   		localFunctions.at(f)->prepareForSimulation(this);
 
   	//cout<<"here 2..."<<endl;
 
+  	if(verbose && (RAZI_DEBUG & CREATE_FUNC)) {cout<<"System: Preparing "<<compositeFunctions.size() <<" composite functions ..."; };
   	for( int f=0; f<compositeFunctions.size(); f++)
   		compositeFunctions.at(f)->prepareForSimulation(this);
 
-  	//cout<<"here 3..."<<endl;
-    //this->printAllFunctions();
+//cout<<"here 3..."<<endl;
+  	if(verbose && (RAZI_DEBUG & CREATE_FUNC)) {this->printAllFunctions();}
 
   	// now we prepare all reactions
+	if(verbose && (RAZI_DEBUG & CREATE_REACTION)) {cout<<"Press a key or wait a few seconds to prepare "<<allReactions.size()<<" reactions ...";}
 	rxnIndexMap = new int * [allReactions.size()];
   	for(unsigned int r=0; r<allReactions.size(); r++)
   	{
@@ -457,16 +477,17 @@ void System::prepareForSimulation()
   		allReactions.at(r)->setRxnId(r);
   	}
 
-  	//cout<<"here 4..."<<endl;
+//cout<<"here 4, reactions registered..."<<endl;
 
 	//This means we aren't going to add any more molecules to the system, so prep the rxns
 	for(rxnIter = allReactions.begin(); rxnIter != allReactions.end(); rxnIter++ )
 		(*rxnIter)->prepareForSimulation();
 
-	//cout<<"here 5..."<<endl;
+//cout<<"here 5, reactions prepared..."<<endl;
 
 	//If there are local functions to be had, make sure we set up those local function lists in the molecules
 	//before we try to add molecules to reactant lists
+	if(verbose && (RAZI_DEBUG & CREATE_REACTION)) {cout<<"Press a key or wait a few seconds to add setup all local functions for molecule-types ..."; };
 	if(this->localFunctions.size()>0) {
 	  	for( molTypeIter = allMoleculeTypes.begin(); molTypeIter != allMoleculeTypes.end(); molTypeIter++ )
 	  		(*molTypeIter)->setUpLocalFunctionListForMolecules();
@@ -476,6 +497,7 @@ void System::prepareForSimulation()
 
 
   	//prep each molecule type for the simulation
+	if(verbose && (RAZI_DEBUG & CREATE_MOLECULE)) {cout<<"Press a key or wait a few seconds to prepare molecule types ..."; };
   	for( molTypeIter = allMoleculeTypes.begin(); molTypeIter != allMoleculeTypes.end(); molTypeIter++ )
   		(*molTypeIter)->prepareForSimulation();
 
@@ -490,6 +512,7 @@ void System::prepareForSimulation()
   	//}
 
   	//Add the complexes to Species observables
+	if(verbose && (RAZI_DEBUG &SHOW_SIM)) {cout<<"Press a key or wait a few seconds to update "<< speciesObservables.size() <<"species observable count based on "<< allComplexes.getComplexCount() <<" complexes ..."; };
   	int match = 0;
   	for(obsIter = speciesObservables.begin(); obsIter != speciesObservables.end(); obsIter++)
   	  	(*obsIter)->clear();
@@ -497,6 +520,7 @@ void System::prepareForSimulation()
   	// NETGEN -- this bit replaces the commented block below
   	Complex * complex;
   	allComplexes.resetComplexIter();
+  	int cid=0; //razi added for debugging
   	while(  (complex = allComplexes.nextComplex()) )
   	{
   		if( complex->isAlive() )
@@ -504,6 +528,9 @@ void System::prepareForSimulation()
   			for(obsIter = speciesObservables.begin(); obsIter != speciesObservables.end(); obsIter++)
   			{
   				match = (*obsIter)->isObservable( complex );
+  				if(verbose && (RAZI_DEBUG &SHOW_SIM)  && match){
+  					cid++; if ((cid<2) && (complex->getComplexID()<2)) cout<<"SpeciesOBS:"<< (*obsIter)->getName()<<" matches complex ID: "<< complex->getComplexID()<< ", Label:("<< complex->getCanonicalLabel() <<")\n";}
+
   				for (int k=0; k<match; k++) (*obsIter)->straightAdd();
   			}
   		}
@@ -547,8 +574,10 @@ void System::prepareForSimulation()
 
 	//this->selector = new LogClassSelector(allReactions);
 
+  	if(verbose && (RAZI_DEBUG &SHOW_SIM))  {cout<<"Press a key or wait a few seconds to evaluate local ...";};
 	this->evaluateAllLocalFunctions();
 
+	if(verbose && (RAZI_DEBUG &SHOW_SIM))  {cout<<"Press a key or wait a few seconds to recompute A ...";   };
   	recompute_A_tot();
 
 
@@ -596,7 +625,13 @@ double System::getNextRxn()
 		this->printAllReactions();
 		exit(1);
 	}
-	return selector->getNextReactionClass(nextReaction);
+	if	(RAZI_DEBUG & RUN_REACTIONS){
+		double y = selector->getNextReactionClass(nextReaction);
+		cout<<"System selects the next reaction. Reaction id [1]:"<< x <<"  [2]:" << y <<endl;
+		return y;
+	}else{
+		return selector->getNextReactionClass(nextReaction);   //Razi: Check why not just pass x and run it again
+	}
 
 
 //  BUILT IN DIRECT SEARCH
@@ -675,7 +710,7 @@ double System::sim(double duration, long int sampleTimes, bool verbose)
 		//   dt = -ln(rand) / a_tot;
 		//Choose a random number on the OPEN interval (0,1) so that we never
 		//have a dt=0 or a dt=infinity
-		if(a_tot>ATOT_TOLERANCE) delta_t = -log(NFutil::RANDOM_OPEN()) / a_tot;
+		if(a_tot>ATOT_TOLERANCE) delta_t = -log(NFutil::RANDOM_OPEN()) / a_tot;    //ARazi: E[delta_t] proportional to 1/a_tot, check why we use log[]
 		else { delta_t=0; current_time=end_time; }
 		if(DEBUG) cout<<"   Determine dt : " << delta_t << endl;
 
@@ -719,6 +754,13 @@ double System::sim(double duration, long int sampleTimes, bool verbose)
 		//this->printAllObservableCounts(this->current_time);
 		//cout<<"\n";
 		//Increment time
+
+		if((RAZI_DEBUG &SHOW_SIM) ){
+			//if (verbose)
+			cout<<"Try to Fire, Reaction:"<<  nextReaction->getName() <<" at time "<< current_time<< "  delta_t: " <<delta_t<<" atot: "<<a_tot<<"  randElement:"<< randElement<<endl;	//	mypause(100);
+		}
+
+
 		iteration++;
 		stepIteration++;
 		globalEventCounter++;
@@ -1470,8 +1512,17 @@ CompositeFunction * System::getCompositeFunctionByName(string fName)
 
 void System::finalizeCompositeFunctions()
 {
+	if (RAZI_DEBUG & (CREATE_FUNC | SHOW_SIM)){
+		cout<<"=========================================================================================\n"<<endl;
+		cout<<"\tFinalizing All Composite Functions ....\n";
+		cout<<"=========================================================================================\n"<<endl; 
+	}
 	for( int i=0; i<(int)compositeFunctions.size(); i++) {
 		compositeFunctions.at(i)->finalizeInitialization(this);
+		if (verbose && (RAZI_DEBUG & CREATE_FUNC)){
+			cout<<"Composite Function After finalizing: "; compositeFunctions.at(i)->printDetails(this);
+			cout<<"-----------------------------------------------------------------------------------------\n";
+		}
 	}
 }
 

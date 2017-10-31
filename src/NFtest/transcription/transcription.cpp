@@ -5,7 +5,7 @@
 //that has the function prototypes, the other includes, and
 //declaration that we are using the NFcore namespace.
 #include "transcription.hh"
-
+#include "../../NFutil/setting.hh"  //RAZI added for debugging
 
 
 

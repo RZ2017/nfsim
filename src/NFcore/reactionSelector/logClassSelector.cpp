@@ -8,6 +8,7 @@
 
 
 #include "reactionSelector.hh"
+#include "../../NFutil/setting.hh"  //Razi added to add debugging messages 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -42,7 +43,7 @@ LogClassSelector::LogClassSelector(vector <ReactionClass *> &rxns) :
 	else totalLogClassCount=minClassLimit*2+1;
 
 	this->logClassList = new ReactionClass **[totalLogClassCount];
-	this->logClassList = &logClassList[(totalLogClassCount-1)/2];
+	this->logClassList = &logClassList[(totalLogClassCount-1)/2]; //Razi: pints to the middle item: logClassList[minClassLimit]
 
 	this->logClassSize = new int [totalLogClassCount];
 	this->logClassSize = &logClassSize[(totalLogClassCount-1)/2];
@@ -295,12 +296,17 @@ double LogClassSelector::getNextReactionClass(ReactionClass *&rc)
 		if(randNum <= a_sum)
 		{
 			selectedClass = c;
-			//cout<<"selected class propensity: "<<logClassPropensity[c]<<" and the a_sum: "<<a_sum<<endl;
-			//cout<<" and the randNum: "<<randNum<<endl;
+			cout<<"selected class propensity: "<<logClassPropensity[c]<<" and the a_sum: "<<a_sum<<endl;
+			cout<<" and the randNum: "<<randNum<<" and c:" << c<<endl;
 			break;
 		}
 	}
 
+	if	(RAZI_DEBUG & RUN_REACTIONS){
+		cout<<"       LogClassSelector::getNextReactionClass, RND:"<< randNum<< "  [index, class, A]:" ;
+		for(int r=0; r<n_activeLogClasses; r++) cout<<"["<< r<<", "<< activeLogClasses[r] << ", " << logClassPropensity[activeLogClasses[r]] <<"], ";
+		cout<<"  Atot:" << Atot  <<"  selected reaction class:"<< selectedClass <<endl;
+	}
 
 	//cout<<"Selected class: "<<selectedClass<<endl;
 
@@ -316,6 +322,11 @@ double LogClassSelector::getNextReactionClass(ReactionClass *&rc)
 
 	 //we have our rule
 	 rc=logClassList[selectedClass][randRule];
+
+	if	(RAZI_DEBUG & RUN_REACTIONS){
+		cout<<"       LogClassSelector::getNextReactionClass, randRule:"<< randRule<<"  selected reaction:"<< rc->getName() <<endl;
+	}
+
 
 	// rc->printDetails();
 	 return -1;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "NFcore.hh"
 
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -148,6 +149,10 @@ void MoleculeType::init(
 	this->system = system;
 	this->type_id = this->system->addMoleculeType(this);
 
+	if(system->getverbose()&& (RAZI_DEBUG & CREATE_MOLECULE)){
+		//cout<<"RAZI_DEBUG:" << RAZI_DEBUG <<"  CREATE_MOLECULE: "<< CREATE_MOLECULE << "RAZI_DEBUG & CREATE_MOLECULE:" << (RAZI_DEBUG & CREATE_MOLECULE) << endl;
+		cout<<"\tMolecule type is generated Name:"<<name<<" MoleculeType ID:" << this->type_id <<" Molecule List of Size:2 MaxSize:"<<system->getGlobalMoleculeLimit()<<" "; cin.get();
+	}
 
 	mList = new MoleculeList(this,2,system->getGlobalMoleculeLimit());
 	n_eqComp = 0;
@@ -413,6 +418,14 @@ void MoleculeType::addTemplateMolecule(TemplateMolecule *t)
 		allTemplates.push_back(t);
 	else
 		cout<<"!!!!Error: trying to add molecule of type " << t->getMoleculeTypeName() << " to MoleculeType " << name << endl;
+
+	if (system->getverbose()&&(RAZI_DEBUG & CREATE_TEMPLATES)){
+		cout<<"\tAdd Template for Molecule Type:" << this->getName()<<"  Pattern:"<<t->getPatternString()<< ",   Total Templates:"<<allTemplates.size()<<"  TMS:";
+		//for (int i=0; i<allTemplates.size(); i++){ cout<<allTemplates[i]->getPatternString()<< ", ";} //commented due to memory crash
+		for (int i=0; i<allTemplates.size(); i++){ if(allTemplates[i]){  cout<<allTemplates[i]->getPatternString()<< ", ";}} //commented due to memory crash
+		cout<<endl;
+	}
+
 }
 
 string MoleculeType::getMolObsName(int obsIndex) const {
@@ -476,8 +489,8 @@ void MoleculeType::addReactionClass(ReactionClass * r, int rPosition)
 
 void MoleculeType::populateWithDefaultMolecules(int moleculeCount)
 {
-	if(DEBUG) cout<< " Populating "<< this->name << " with " << moleculeCount << " molecule(s)";
-	if(DEBUG) cout<< " for a total of " << mList->size()+moleculeCount << " molecule(s)."<<endl;
+	if(DEBUG || (RAZI_DEBUG & CREATE_SPECIES)) cout<< " Populating "<< this->name << " with " << moleculeCount << " molecule(s)";
+	if(DEBUG || (RAZI_DEBUG & CREATE_SPECIES)) cout<< " for a total of " << mList->size()+moleculeCount << " molecule(s)."<<endl;
 	//mInstances.reserve(mInstances.size()+moleculeCount);
 	for(int m=0; m<moleculeCount; m++)
 	{
@@ -506,11 +519,12 @@ void MoleculeType::setUpLocalFunctionListForMolecules()
 
 void MoleculeType::prepareForSimulation()
 {
-	//cout<<"Preparing: "<<name<<endl;
+	if(system->getverbose()&&(RAZI_DEBUG & CREATE_MOLECULE)) cout<<"Preparing: "<<name<<endl;
 	//Check each reaction and add this molecule as a reactant if we have to
 	int r=0;
 	for(rxnIter = reactions.begin(), r=0; rxnIter != reactions.end(); rxnIter++, r++ )
 	{
+		if(system->getverbose()&&(RAZI_DEBUG & CREATE_MOLECULE)) cout<<"MT:"<<this->getName()<< "  Register reaction index:"<<r<<" reaction[name:"<< (*rxnIter)->getName()<<",\tRxnInd:"<<(*rxnIter)->getRxnId()<<", \tposition in rxn:"<<reactionPositions.at(r)<<"]..."<<endl;
 		system->registerRxnIndex((*rxnIter)->getRxnId(), reactionPositions.at(r),r);
   	}
 

@@ -2,7 +2,7 @@
 
 
 #include "mappingSet.hh"
-
+#include "../../NFutil/setting.hh"  //Razi: added for test
 
 using namespace NFcore;
 
@@ -32,6 +32,45 @@ MappingSet::MappingSet(unsigned int id, vector <Transformation *> &transformatio
 			mappings[t] = new Mapping(transformations.at(t)->getType(), transformations.at(t)->getComponentIndex() );
 	}
 }
+
+
+
+
+#ifdef RHS_FUNC
+//Razi: implemented to support RHS function: copy constructor
+//make a new mappingset for a set of test molecules, later assign the mappings accordingly
+//MappingSet::MappingSet(MappingSet * ms, vector <Molecule *> &Mols){
+MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
+
+	this->id = ms->id;
+	if (Mols.size() < ms->n_mappings){
+			cerr<<"MappingSet Error==> Inconsistency between the number of number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
+			ms->printDetails(); exit(0);
+	}
+
+	if (ms->n_mappings > 1){
+		cerr<<"MappingSet Error==> More than one reactant for each mapping set os not yet developed. Number of reactants:"<<ms->n_mappings<<"!!!";
+		ms->printDetails(); exit(0);
+	}
+
+	this->n_mappings = ms->n_mappings;
+
+	this->mappings = new Mapping *[n_mappings];
+	this->isSpeciesDeletion=ms->isSpeciesDeletion;
+	this->clonedMappingSet=ms->clonedMappingSet;
+
+	Molecule * m;
+	for(unsigned int t=0; t<n_mappings; t++) {
+
+		m = Mols.front();Mols.pop_front(); //Razi: code for list
+		//m = Mols[t];    //Razi: code for vector
+		mappings[t] = new Mapping(ms->mappings[t], m);
+	}
+}
+#endif
+
+
+
 MappingSet::~MappingSet()
 {
 	for(unsigned int t=0; t<n_mappings; t++) {

@@ -1,6 +1,5 @@
 #include "NFinput.hh"
-
-
+#include "../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 
 #include <algorithm>
 
@@ -51,6 +50,7 @@ System * NFinput::initializeFromXML(
 		int &suggestedTraversalLimit,
 		bool evaluateComplexScopedLocalFunctions )
 {
+	if ((RAZI_DEBUG) & READ_FILE) cout<<"\n =========================================================================================\n\n";
 	if(!verbose) cout<<"reading xml file ("+filename+")  \n\t[";
 	if(verbose) cout<<"\tTrying to read xml model specification file: \t\n'"<<filename<<"'"<<endl;
 
@@ -86,6 +86,7 @@ System * NFinput::initializeFromXML(
 
 		// set evaluation of complex-scoped local functions (true or false)
 		s->setEvaluateComplexScopedLocalFunctions(evaluateComplexScopedLocalFunctions);
+		s->setverbose(verbose);
 
 		//Read the key lists needed for the simulation and make sure they exist...
 		TiXmlElement *pListOfParameters = pModel->FirstChildElement("ListOfParameters");
@@ -104,6 +105,7 @@ System * NFinput::initializeFromXML(
 
 		//Now retrieve the parameters, so they are easy to look up in the future
 		//and save the parameters in a map we call parameter
+		if ((RAZI_DEBUG) & READ_FILE) cout<<"\n =========================================================================================\n\n";
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading parameter list..."<<endl;
 		map<string, double> parameter;
@@ -113,7 +115,7 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
-
+		if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of MoleculeTypes..."<<endl;
 		map<string,int> allowedStates;
@@ -123,8 +125,9 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
+		//if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ----------------------------------------A-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(-1);}
 
-
+		if ((RAZI_DEBUG) & READ_FILE){ cout<<"\n =========================================================================================\n\n";  mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of Species..."<<endl;
 		if(!initStartSpecies(pListOfSpecies, s, parameter, allowedStates, verbose))
@@ -135,6 +138,7 @@ System * NFinput::initializeFromXML(
 		}
 
 
+		if ((RAZI_DEBUG) & (READ_FILE|CREATE_OBS)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of Observables..."<<endl;
 		if(!initObservables(pListOfObservables, s, parameter, allowedStates, verbose, suggestedTraversalLimit))
@@ -146,6 +150,7 @@ System * NFinput::initializeFromXML(
 
 
 
+		if ((RAZI_DEBUG) & (READ_FILE| CREATE_FUNC)){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else if(pListOfFunctions) cout<<"\n\tReading list of Functions..."<<endl;
 		if(pListOfFunctions)
@@ -156,9 +161,9 @@ System * NFinput::initializeFromXML(
 				return NULL;
 			}
 		}
+		//for debug if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); }
 
-
-
+		if ((RAZI_DEBUG) & (READ_FILE | CREATE_REACTION)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		//We have to read reactionRules AFTER observables because sometimes reactions
 		//might depend on some observable...
 		if(!verbose) cout<<"-";
@@ -170,7 +175,8 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
-
+		//if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ---------------------------------------C------------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); exit(1);}
+		if ((RAZI_DEBUG) & READ_FILE){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		/////////////////////////////////////////
 		// Parse is finally over!  Now we just have to take care of some final details.
 
@@ -275,6 +281,7 @@ bool NFinput::initMoleculeTypes(
 		map<string,int> &allowedStates,
 		bool verbose)
 {
+	if(!((RAZI_DEBUG) & CREATE_MOLECULE)) {verbose=false;} //disable extra messages
 	try {
 		vector <string> compLabels;
 		vector <string> defaultCompState;
@@ -1012,6 +1019,8 @@ bool NFinput::initReactionRules(
 		int &suggestedTraversalLimit)
 {
 
+	bool show_flag = false; //razi added only for test, later delete
+	if(!((RAZI_DEBUG) & CREATE_REACTION)) {verbose=false;} //disable extra messages
 
 	try {
 
@@ -1019,7 +1028,7 @@ bool NFinput::initReactionRules(
 		TiXmlElement *pRxnRule;
 		for ( pRxnRule = pListOfReactionRules->FirstChildElement("ReactionRule"); pRxnRule != 0; pRxnRule = pRxnRule->NextSiblingElement("ReactionRule"))
 		{
-
+			//if ((RAZI_DEBUG) & CREATE_REACTION) mypause(WTIME);//{mypause(-1); cls();}
 			//First, scan the reaction rule for possible symmetries!!!
 			map <string, component> symComps;
 			map <string, component> symRxnCenter;
@@ -1039,6 +1048,11 @@ bool NFinput::initReactionRules(
 			//to keep track of the result...
 			vector < map <string,component> > permutations;
 			generateRxnPermutations(permutations, symComps, symRxnCenter,verbose);
+
+
+			if ((RAZI_DEBUG) & CREATE_REACTION){
+				cout<<"\tPreprocessing Finished. # of symComps:"<< symComps.size() <<"# of symRxnCenter:"<< symRxnCenter.size() <<"# of permutations:"<< permutations.size() <<endl<<endl;
+			}
 
 
 			for( unsigned int p=0; p<permutations.size(); p++)
@@ -1062,7 +1076,22 @@ bool NFinput::initReactionRules(
 						rxnName = rxnName + "_sym" + out.str();
 					}
 				}
-				if(verbose) cout<<"\t\tCreating Reaction Rule: "<<rxnName<<endl;
+				if(verbose) cout<<"\tCreating Reaction Rule: "<<rxnName<<endl;
+				if (((RAZI_DEBUG) & CREATE_REACTION) || ((RAZI_DEBUG) & CHECK_LBG)){   //Razi: this paragraph is debugging for a specific bug, can be removed later
+					cout<<"\tAnalyzing Reaction:"<< rxnName <<" Permutation[" <<p+1<<"/"<< permutations.size()<<"] ==>";
+					if (symMap.empty()){ cout <<" No Symmetric Map  ";
+					}else {
+						for (map <string,component>::iterator myMapIter = symMap.begin(); myMapIter != symMap.end(); myMapIter++)
+							cout<<"   Permutation ("<< myMapIter->first << ", "<< myMapIter->second.name <<"),   ";
+					}
+					show_flag=false;
+					if ((rxnName.compare("Bug1")==0)|| (rxnName.compare("NoBug1")==0)) {
+						show_flag = true;
+						cout<<"compare string result: "<<(rxnName.compare("RR9"))<<"  show_flag:"<<show_flag<<endl;
+						cout<<"\n ----------------------------------------A-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(10);
+					} //debug, later del
+
+				}
 
 				// grab symmetry factor, if any..
 				bool useSymmetryFactor = false;
@@ -1090,6 +1119,13 @@ bool NFinput::initReactionRules(
 				// points to TemplateMolecules for AddMoleculeTransforms
 				vector <TemplateMolecule *> addmol_templates;
 
+#ifdef RHS_FUNC
+				//map <string, component> output_comps;//no need
+				// points to TemplateMolecules for products
+				vector <TemplateMolecule *> Outputtemplates;
+				// maps product pattern ids to TemplateMolecule pointers
+				map <string,TemplateMolecule *> products;  //Razi : may not be required, later check
+#endif
 
 
 				//  Read in the Reactant Patterns for this rule
@@ -1122,10 +1158,15 @@ bool NFinput::initReactionRules(
 				}
 
 				//Outputting all the templates for debugging purposes
-				//map<const char*, TemplateMolecule *, strCmp>::iterator it;
-				//	for ( it=reactants.begin() ; it != reactants.end(); it++ )
-				//		cout << (*it).first << " => " << (*it).second->getMoleculeType()->getName() << endl;
-
+				if (((RAZI_DEBUG) & CHECK_LBG) && show_flag){
+					cout<<"\tTemplates required for this reaction: \n";
+					for (map<string,TemplateMolecule *>::iterator it=reactants.begin() ; it != reactants.end(); it++ ){
+						cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+						cout <<(*it).first << " => " << (*it).second->getMoleculeType()->getName() <<endl;
+						(*it).second->getMoleculeType()->printDetails();
+						cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+					}
+				}
 
 				///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				//Read in the list of operations we need to perform in this rule
@@ -1155,8 +1196,12 @@ bool NFinput::initReactionRules(
 				vector <MoleculeCreator *> moleculeCreatorsList;
 
 				TiXmlElement *pAdd;
-				for ( pAdd = pListOfOperations->FirstChildElement("Add");
-						pAdd != 0;  pAdd = pAdd->NextSiblingElement("Add") )
+				if ((RAZI_DEBUG) & CREATE_REACTION){ //Razi: only for debug
+					pAdd = pListOfOperations->FirstChildElement("Add");
+					if (!pAdd) cout<<"\tNo new molecule is added by this reaction, skipped required processing"<<endl;
+					else cout<<"\tAt least one molecule is added by this reaction, perform required processing"<<endl;
+				}
+				for ( pAdd = pListOfOperations->FirstChildElement("Add");pAdd != 0;  pAdd = pAdd->NextSiblingElement("Add") )
 				{
 
 					//Make sure all the information about the state change is here
@@ -1300,7 +1345,71 @@ bool NFinput::initReactionRules(
 						     << "Add transform in reaction " << rxnName << "." << endl;
 						return false;
 					}
+				} //for ( pAdd = pListOfOperations->FirstChildElement("Add");pAdd != 0;  pAdd = pAdd->NextSiblingElement("Add") ) razi: added for debugging
+
+
+
+
+#ifdef RHS_FUNC
+				//Razi: This part is added to keep track of output patterns in case there is a function applied to the RHS of an equation
+
+				//Go get the product patterns
+				if ((RAZI_DEBUG) & CREATE_REACTION) cout<<"\n\tAnalyzing reaction products\n";
+				TiXmlElement *pListOfProductPatterns = pRxnRule->FirstChildElement("ListOfProductPatterns");
+				if ( !pListOfProductPatterns )
+				{
+					cerr << "Error:: ReactionRule " << rxnName << " contains no product patterns,\n"
+					     << "but needs at least one to add a molecule creation rule!" << endl;
+					return false;
 				}
+
+				TiXmlElement * pProduct;
+				for ( pProduct = pListOfProductPatterns->FirstChildElement("ProductPattern");
+						pProduct != 0; pProduct = pProduct->NextSiblingElement("ProductPattern") )
+				{
+
+					//Razi: read product templates
+					//First extract out the product Id
+					const char * productName;
+					if( !pProduct->Attribute("id") )
+					{
+						cerr<<"Product pattern in ReactionRule "+rxnName+" does not have a valid id attribute!"<<endl;
+						return false;
+					}
+					productName = pProduct->Attribute("id");
+					if(!productName) {
+						cerr<<"Product tag in reaction "<<rxnName<<" without a valid 'id' attribute.  Quitting"<<endl;
+						return false;
+					}
+					if(verbose) cout<<"\tReading Product Pattern: "<<productName<<endl;
+
+
+					//Razi: read molecules for each product template
+					TiXmlElement *pListOfOutputMols = pProduct->FirstChildElement("ListOfMolecules");
+					if(pListOfOutputMols) {
+						//Razi: This may need some modifications, later check !
+
+//cout<<"NFInput: Show components before reading;\n"; mypause(100); int iii=0; for(map <string, component>::iterator it = comps.begin(); it != comps.end(); it++, iii++){ cout<<"component["<< iii<<"] A:"<< it->first<< "  B:"<< it->second.name<<"    ";}
+						TemplateMolecule *tm        = readPattern(pListOfOutputMols, s, parameter, allowedStates, productName,  products,  comps, symMap, verbose, suggestedTraversalLimit);
+//cout<<"NFInput: Show components after reading;\n"; mypause(100); iii=0; for(map <string, component>::iterator it = comps.begin(); it != comps.end(); it++, iii++){ cout<<"component["<< iii<<"] A:"<< it->first<< "  B:"<< it->second.name<<"    ";}
+						if(tm==NULL) return false;
+						Outputtemplates.push_back(tm);
+					}
+					else {
+						cerr<<"Product pattern "<<productName <<" in reaction "<<rxnName<<" without a valid 'ListOfMolecules'!  Quiting."<<endl;
+						return false;
+					}
+				}
+				if (verbose){
+					cout<< "\t"<<Outputtemplates.size() <<" products found for reaction: " << rxnName<<endl;
+					for (vector <TemplateMolecule *>::iterator it=templates.begin(); it != templates.end(); ++it) cout<<"\tInput: " << (*it)->getPatternString()<<endl;
+					for (vector <TemplateMolecule *>::iterator it=addmol_templates.begin(); it != addmol_templates.end(); ++it) cout<<"\tAdd mol: " << (*it)->getPatternString()<<endl;
+					for (vector <TemplateMolecule *>::iterator it=Outputtemplates.begin(); it != Outputtemplates.end(); ++it) cout<<"\tProduct: " << (*it)->getPatternString()<<endl;
+				}
+#endif
+
+
+
 
 
 
@@ -1310,7 +1419,12 @@ bool NFinput::initReactionRules(
 				if ( moleculeCreatorsList.empty() )
 				{
 					// create transformation set without add molecule transformas
+#ifdef RHS_FUNC
+					if (addmol_templates.size() > 0) cerr<<"NFinput: Error, the addmol buffer is not empty.\n";
+					ts = new TransformationSet(templates, addmol_templates,Outputtemplates); //razi changed, was    ts = new TransformationSet(templates,);
+#else
 					ts = new TransformationSet(templates);
+#endif
 				}
 				else
 				{
@@ -1323,7 +1437,11 @@ bool NFinput::initReactionRules(
 					}
 
 					// create transformation set with add molecule transforms!
-					ts = new TransformationSet( templates, addmol_templates );
+#ifdef RHS_FUNC
+					ts = new TransformationSet( templates, addmol_templates, Outputtemplates); //Razi changed, was ts = new TransformationSet( templates, addmol_templates );
+#else
+					ts = new TransformationSet( templates, addmol_templates);
+#endif
 
 					// add molecule creators!
 					for ( mc_iter = moleculeCreatorsList.begin();
@@ -1362,6 +1480,9 @@ bool NFinput::initReactionRules(
 					component *c;
 					int finalStateInt = 0;
 					if(!lookup(c, site, comps, symMap)) return false;
+					if((RAZI_DEBUG) & CREATE_REACTION) {
+						cout<<"\tState Change for site:"<<site<<"  component found by looking up the comps and symMap ID:"<<c->uniqueId<<"   CompPermutaion-name:"<<c->symPermutationName<<"  compName:"<<c->name<<endl;
+					}
 
 					// Check if this is modifying a population (illegal!)
 					if ( c->t->getMoleculeType()->isPopulationType() )
@@ -1878,13 +1999,30 @@ bool NFinput::initReactionRules(
 									if( reactants.find(argValue)!=reactants.end() ) {
 										// found good molecule reference!
 										ts->addLocalFunctionReference(reactants.find(argValue)->second,argId,LocalFunction::MOLECULE);
-										if(verbose) {cout<<"\t\t\t\tScope of tag "<< argId <<" is MOLECULE (argValue="<<argValue<<")"<<endl; }
+										if(verbose) {cout<<"\tScope of tag "<< argId <<" is MOLECULE (argValue="<<argValue<<")"<<endl; }
 									}
+#ifdef RHS_FUNC
+									else{  //the function is not LHS, lets check if it is RHS i.e. if its argument refers to a output template
+										if(products.find(argValue)!=products.end()) {
+											// found good molecule reference!
+											ts->addLocalFunctionReference(products.find(argValue)->second,argId,LocalFunction::MOLECULE, true); //RHSfunc=1
+											if(verbose) {cout<<"\tRHS: Scope of tag "<< argId <<" is MOLECULE (argValue="<<argValue<<")"<<endl; }
+										}
+										else {
+											cerr<<"!!Error:: ReactionRule "<<rxnName<<" rate law specification Function:\n"
+													<<" cannot find LHS or RHS referent "<<argId<<" for local function tag "<<argValue<<"."<<endl;
+											return false;
+										}
+									}
+
+#else
 									else {
 										cerr<<"!!Error:: ReactionRule "<<rxnName<<" rate law specification Function:\n"
 												<<" cannot find referent "<<argId<<" for local function tag "<<argValue<<"."<<endl;
 										return false;
 									}
+#endif
+
 								}
 								else if ( argValue.find("_RP")!=string::npos ) {
 									// this appears to be a pattern ("species") reference
@@ -1892,6 +2030,7 @@ bool NFinput::initReactionRules(
 									if ( comps.find(argValue)!=comps.end() ) {
 										// found good pattern reference!
 										component c = comps.find(argValue)->second;
+										if(verbose) {cout<<"\tReaction with LHS Func: Scope of tag "<<argId<<" is SPECIES  (argValue="<<argValue<<")"<<endl; }
 										ts->addLocalFunctionReference(c.t,argId,LocalFunction::SPECIES);
 										if(verbose) {cout<<"\t\t\t\tScope of tag "<<argId<<" is SPECIES  (argValue="<<argValue<<")"<<endl; }
 									}
@@ -1901,7 +2040,23 @@ bool NFinput::initReactionRules(
 										return false;
 									}
 								}
-
+#ifdef RHS_FUNC
+								else if (argValue.find("_PP")!=string::npos ) {  // function applies to reaction products
+									// this appears to be a pattern ("species") reference
+									// ..make sure the pattern reference is good
+									if (comps.find(argValue)!=comps.end() ) {
+										// found good pattern reference!
+										component c = comps.find(argValue)->second;
+										if(verbose) {cout<<"\tReaction with RHS Func: Scope of tag "<<argId<<" is SPECIES  (argValue="<<argValue<<")"<<endl; }
+										ts->addLocalFunctionReference(c.t,argId,LocalFunction::SPECIES, true);
+									}
+									else {
+										cerr<<"!!Error:: ReactionRule "<<rxnName<<" rate law specification Function:\n"
+												<<" cannot find referent "<<argId<<" for local function tag "<<argValue<<"."<<endl;
+										return false;
+									}
+								}
+#endif
 							}
 						}
 
@@ -1909,6 +2064,12 @@ bool NFinput::initReactionRules(
 						//for(int i=0; i<funcArgs.size(); i++) {
 						//	cout<<funcArgs.at(i)<<endl;
 						//}
+
+
+#ifdef RHS_FUNC //Razi added to support RHS functions
+//						cout<<"\n\tTransformation Set Details: ";ts->printDetails(); //razi added just for test
+//						cout<<"\tNFInput: Razi Developed until here, follow functions on RHS, Also check constructors for FunctionalRxnClass and DORRxnClass"; mypause(-1); //exit(0);
+#endif
 
 						if(isGlobal)
 						{
@@ -1940,8 +2101,27 @@ bool NFinput::initReactionRules(
 								ts->finalize();
 
 								CompositeFunction *cf = s->getCompositeFunctionByName(functionName);
-
-								r=new DORRxnClass(rxnName,1,"",ts,cf,funcArgs,s);
+								if (show_flag){
+								//	cls();
+									cout<<"\n ----------------------------------------A3-----------------------------------------------\n\n";
+									s->printAllMoleculeTypes(); mypause(10);  //debug, later del
+								 	cf->printDetails(s);
+									for(unsigned int i=0; i< funcArgs.size(); i++)
+										cout<<" Func Args: "<<i<<"-,"<< funcArgs[i]<<"    ";
+									cout<<endl;
+									cout<<" TS, Reactants:";
+									for(unsigned int i=0; i< ts->getNreactants(); i++){
+										cout<<i<<"-"<<endl;
+										ts->getTemplateMolecule(i)->printDetails();
+									}mypause(-1);
+								}
+#ifdef RHS_FUNC //Razi added to support RHS functions
+								if(ts->includeRHSFunc)
+									r=new RHSRxnClass(rxnName,1,"",ts,cf,funcArgs,s);
+								else
+#endif
+									r=new DORRxnClass(rxnName,1,"",ts,cf,funcArgs,s);
+								if (show_flag){cout<<"\n ----------------------------------------A4-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(10);} //debug, later del
 							}
 						}
 					}
@@ -2026,6 +2206,16 @@ bool NFinput::initReactionRules(
 									ts->addLocalFunctionReference(reactants.find(argValue)->second,argId,LocalFunction::MOLECULE);
 									if(verbose) {cout<<"\t\t\t\tScope is MOLECULE"<<endl; }
 								}
+#ifdef RHS_FUNC
+								else{
+									if(products.find(argValue)!=products.end())
+									{
+										ts->addLocalFunctionReference(products.find(argValue)->second,argId,LocalFunction::MOLECULE, true);
+										if(verbose) {cout<<"\tScope is MOLECULE"<<endl; }
+									}
+								}
+#endif
+
 							}
 						}
 
@@ -2176,8 +2366,10 @@ bool NFinput::initReactionRules(
 					r->setTotalRateFlag(totalRateFlag);
 					comps.clear();
 				}
+				if (((RAZI_DEBUG) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
 
 			} //end loop through all permutations
+			if (((RAZI_DEBUG) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------C-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
 
 		} //end loop through all reaction rules
 
@@ -2244,6 +2436,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 				return false;
 			}
 		}
+		if ((RAZI_DEBUG) & CREATE_OBS) cout<<"\tOBS: "<< observableName <<" =>Found Pattern :" <<patternName << " Relation:"<< relation<<"  Quantitiy:"<< quantity<< endl;
 
 		//cout<<"   --- reading pattern "<<patternName<<" for symmetry"<<endl;
 		TiXmlElement *pListOfMols = pPattern->FirstChildElement("ListOfMolecules");
@@ -2273,6 +2466,18 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 					if(tm==NULL) return false;
 					tmList.push_back(tm);
 
+
+					if ((RAZI_DEBUG) & CREATE_OBS){
+						cout<<"\tOBS: "<< observableName <<" => Analyzing Permutation[" <<p+1<<"/"<< permutations.size()<<"] ==>";
+						if (symMap.empty()){ cout <<" No Symmetric Map";
+						}else {
+							for (map <string,component>::iterator myMapIter = symMap.begin(); myMapIter != symMap.end(); myMapIter++)
+								cout<<"   Permutation ("<< myMapIter->first << ", "<< myMapIter->second.name <<"),   ";
+						}
+						cout<<" Template Added:"<< tm->getMoleculeTypeName()<<endl;
+					}
+
+
 					if(!relation.empty()) {
 						cerr<<"Error when creating observable: "<<observableName<<": a stoichiometric observable found for\n";
 						cerr<<"observable of type Molecules.  Currently, NFsim only handles stoichiometric Species\n";
@@ -2280,8 +2485,12 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 						return false;
 					}
 				}
-			}
+				if ((RAZI_DEBUG) & CREATE_OBS){
+					cout<<"\tOBS: "<< observableName <<" =>Total Permutations:" <<permutations.size() << " Templates:";
+					for(int an=0; an<tmList.size(); an++) cout<<tmList[an]->getMoleculeTypeName()<<", "; cout<<"\b\b\n";
+				}
 
+			}
 			//Otherwise, we only have to match once, so we do this for species
 			else if(obsType==Observable::SPECIES) {
 
@@ -2294,6 +2503,17 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 				tmList.push_back(tm);
 				stochRelation.push_back(relation);
 				stochQuantity.push_back(quantity);
+
+
+
+				if ((RAZI_DEBUG) & CREATE_OBS){
+					cout<<"\tOBS (SPECIES): "<< observableName <<"  Templates:"<<tm->getMoleculeTypeName()<<"   Relation:"<<relation << "   Quantity:" << quantity<<"\b\b\n";
+					if (tm->getN_connectedTo()>0){
+						cout<<" The template <<" << tm->getPatternString() << "is connected to " << tm->getN_connectedTo() << " other molecules"<<endl;
+					}
+					tm->printDetails();
+				}
+
 				if(verbose && !relation.empty()) {
 					cout<<"\t\t\t\t\tHas stoichiometric constraint: '"<<relation<<" "<<quantity<<"'"<<endl;
 				}
@@ -2309,6 +2529,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 		}
 	}
 
+	if ((RAZI_DEBUG) & CREATE_OBS) cout<<"\n======================================================================================\n\n";
 
 	return true;
 }
@@ -2322,6 +2543,7 @@ bool NFinput::initObservables(
 		bool verbose,
 		int &suggestedTraversalLimit)
 {
+		if (!((RAZI_DEBUG) & CREATE_OBS)) verbose=false;
 	try {
 		//We will parse this in a similar manner to parsing species, except to say that we don't create
 		//actual molecules, just template molecules.
@@ -2503,7 +2725,7 @@ TemplateMolecule *NFinput::readPattern(
 			//Get the moleculeType and create the actual template
 			MoleculeType *moltype = s->getMoleculeTypeByName(molName);
 			TemplateMolecule *tempmol = new TemplateMolecule(moltype);
-			if(verbose) cout<<"\t\t\t\tIncluding Molecule of type: "<<molName<<" with local id: " << molUid<<endl;
+			if(verbose) cout<<"\treadPattern: Including Molecule of type: "<<molName<<" with local id: " << molUid<<endl;
 
 			//Create a comp element that matches onto this molecule so we can retrieve
 			//any pointers to this molecule (for instance, to allow deletion of this molecule)

@@ -7,6 +7,7 @@
 #define MAPPING_HH_
 
 #include "../NFreactions.hh"
+#include "../../NFutil/setting.hh"  //Razi: added for test
 
 namespace NFcore
 {
@@ -35,6 +36,11 @@ namespace NFcore
 			    @author Michael Sneddon
 			 */
 			Mapping(unsigned int type, int index);
+#ifdef RHS_FUNC
+//Razi: implemented to support RHS function: copy constructor
+//make a new mapping object for a test molecule, then assign the pointer accordingly
+			Mapping(const Mapping * mp, Molecule * m);
+#endif
 
 			/*!
 			 	Destroys this mapping, but does not delete the molecule it is mapped to.

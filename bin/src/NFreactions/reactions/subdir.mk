@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/NFreactions/reactions/DORreaction.cpp \
+../src/NFreactions/reactions/RHSreaction.cpp \
 ../src/NFreactions/reactions/reaction.cpp 
 
 OBJS += \
 ./src/NFreactions/reactions/DORreaction.o \
+./src/NFreactions/reactions/RHSreaction.o \
 ./src/NFreactions/reactions/reaction.o 
 
 CPP_DEPS += \
 ./src/NFreactions/reactions/DORreaction.d \
+./src/NFreactions/reactions/RHSreaction.d \
 ./src/NFreactions/reactions/reaction.d 
 
 

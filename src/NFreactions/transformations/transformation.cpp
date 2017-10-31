@@ -14,7 +14,7 @@ StateChangeTransform::StateChangeTransform(int cIndex, int newValue) :
 	this->cIndex = cIndex;
 	this->newValue = newValue;
 }
-void StateChangeTransform::apply(Mapping *m, MappingSet **ms)
+void StateChangeTransform::apply(Mapping *m, MappingSet **ms)    //A.Razi **ms is not used for this transformation, included for consistency
 {
 	m->getMolecule()->setComponentState(cIndex,newValue);
 }
@@ -28,7 +28,7 @@ IncrementStateTransform::IncrementStateTransform(unsigned int cIndex) :
 {
 	this->cIndex = cIndex;
 }
-void IncrementStateTransform::apply(Mapping *m, MappingSet **ms)
+void IncrementStateTransform::apply(Mapping *m, MappingSet **ms)  //A.Razi ms is not used, check later
 {
 	int oldValue = m->getMolecule()->getComponentState(cIndex);
 	m->getMolecule()->setComponentState(cIndex,oldValue+1);
@@ -42,7 +42,7 @@ DecrementStateTransform::DecrementStateTransform(unsigned int cIndex) :
 {
 	this->cIndex = cIndex;
 }
-void DecrementStateTransform::apply(Mapping *m, MappingSet **ms)
+void DecrementStateTransform::apply(Mapping *m, MappingSet **ms)  //A.Razi ms is not used, check later
 {
 	int oldValue = m->getMolecule()->getComponentState(cIndex);
 	m->getMolecule()->setComponentState(cIndex,oldValue-1);

@@ -6,17 +6,20 @@
 CPP_SRCS += \
 ../src/NFutil/conversion.cpp \
 ../src/NFutil/random.cpp \
-../src/NFutil/stringOperations.cpp 
+../src/NFutil/stringOperations.cpp \
+../src/NFutil/tools.cpp 
 
 OBJS += \
 ./src/NFutil/conversion.o \
 ./src/NFutil/random.o \
-./src/NFutil/stringOperations.o 
+./src/NFutil/stringOperations.o \
+./src/NFutil/tools.o 
 
 CPP_DEPS += \
 ./src/NFutil/conversion.d \
 ./src/NFutil/random.d \
-./src/NFutil/stringOperations.d 
+./src/NFutil/stringOperations.d \
+./src/NFutil/tools.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

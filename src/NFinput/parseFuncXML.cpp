@@ -1,6 +1,5 @@
 #include "NFinput.hh"
-
-
+#include "../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 
 
 
@@ -43,6 +42,8 @@ bool createFunction(string name,
 		map<string,int> &allowedStates,
 		bool verbose)
 {
+	if(!(RAZI_DEBUG & CREATE_FUNC)) {verbose=false;}//cout<<"parseFuncXML:CREATE_FUNC: Function Messages are disables !!!\n"; } //disable extra messages
+	//else{cout<<"CREATE_FUNC:  verbose:"<<verbose<<"   RAZI_DEBUG:"<<(RAZI_DEBUG & CREATE_FUNC)<<endl;}
 
 	if(expression.size()==0) return true;
 
@@ -65,12 +66,21 @@ bool createFunction(string name,
 		}
 	}
 
+	if (RAZI_DEBUG & CREATE_FUNC){
+		unsigned int an; cout<<"\t Create Function (Rearranging the params): Other Func counter:\t"<<otherFuncRefCounter;
+		cout<<"\n\t\tArguments: \t";		for(an = 0; an < argNames.size(); an++) cout<<argNames.at(an)<<", ";
+		cout<<"\n\t\tParamNames: \t";	for(an = 0; an < paramNames.size(); an++) cout<<paramNames.at(an)<<", ";
+		cout<<"\n\t\tvarRefNames: \t";	for(an = 0; an < varRefNames.size(); an++) cout<<varRefNames.at(an)<<", ";
+		cout<<"\n\t\tvarRefTypes: \t";	for(an = 0; an < varRefTypes.size(); an++) cout<<varRefTypes.at(an)<<", ";
+		cout<<"\n\t\tFuncType:: \t"; if(otherFuncRefCounter>0) cout<<"Composite"; else if (varRefNames.size()==0) cout<<"Global"; else cout<<"Local"; cout<<endl;
+	}
 
 	if(otherFuncRefCounter!=0) {
 
 		//Must be a composite function, so parse as such
 		//cout<<"creating composite function\n";
 		createCompositeFunction(name, expression, argNames, refNames, refTypes, paramNames, s, verbose);
+		if (RAZI_DEBUG & CREATE_FUNC) cout<<endl<<"========================================================================================="<<endl;
 		return true;
 		//	exit(1);
 	}
@@ -85,6 +95,7 @@ bool createFunction(string name,
 			cerr<<"functions with the same name, so I'll just stop now."<<endl;
 			return false;
 		}
+		if (RAZI_DEBUG & CREATE_FUNC) cout<<endl<<"========================================================================================="<<endl;
 		return true;
 	}
 
@@ -241,6 +252,14 @@ bool createLocalFunction(string name,
 	} //end loop over the possible references
 
 
+	if (RAZI_DEBUG & CREATE_FUNC){
+		cout<<"\t Try creating Local Function for:\t"<<originalExpression<<endl;
+		cout<<"\t\t Observable and their scopes are: \t";		for(unsigned int an = 0; an < obsUsedScope.size(); an++) cout<<"["<< obsUsedScope[an] <<"]:"<<obsUsedExpressionRef[an] <<", "; cout<<endl;
+	}
+
+
+
+
 	//as an optimization, certain observables may be used in more than one position
     //with the same scope.  The loops above uniquely identified each instance of each
 	//reference - but that means that the function will evaluate separately each
@@ -304,6 +323,13 @@ bool createLocalFunction(string name,
 			finalLocalObservables.at(i) = systemObs->clone();
 		}
 	}
+
+
+	if (RAZI_DEBUG & CREATE_FUNC){
+		cout<<"\t\t Observable and their scopes [After removing duplicates] are: \t";
+		for(unsigned int an = 0; an < finalObsUsedName.size(); an++) cout<<"scope:"<< finalObsUsedScope[an] <<" name:"<<finalObsUsedName[an] <<"  Expression:"<<finalObsUsedExpressionRef[an]<<" actual obs ptr:" << finalLocalObservables[an]->getName()<<" of type:" <<finalLocalObservables[an]->getType() <<endl;
+	}
+
 
 //  DEPRECATED - original version for matching up observables, now handled by cloning existing ones
 //	//now from the list of observable names, we have to go back and
@@ -400,6 +426,7 @@ bool createLocalFunction(string name,
 						paramNames);
 	s->addLocalFunction(lf);
 	//cout<<"was added fine."<<endl;
+	if (RAZI_DEBUG & CREATE_FUNC) cout<<endl<<"========================================================================================="<<endl;
 	return true;
 }
 
@@ -426,6 +453,7 @@ bool NFinput::initFunctions(
 	map<string,int> &allowedStates,
 	bool verbose)
 {
+	if(!(RAZI_DEBUG & CREATE_FUNC)) {verbose=false;} //disable extra messages
 	try {
 		vector <string> argNames;
 		vector <string> refNames;
@@ -435,8 +463,10 @@ bool NFinput::initFunctions(
 
 		//Loop through the Function tags...
 		TiXmlElement *pFunction;
+		if((RAZI_DEBUG & CREATE_FUNC) && (!pListOfFunctions->FirstChildElement("Function"))) cout<<"\t\tNo Function in the list"<<endl;
 		for ( pFunction = pListOfFunctions->FirstChildElement("Function"); pFunction != 0; pFunction = pFunction->NextSiblingElement("Function"))
 		{
+			if((RAZI_DEBUG & CREATE_FUNC)) cout<<"Reading One Function "<<endl;
 			//Check if MoleculeType tag has a name...
 			if(!pFunction->Attribute("id")) {
 				cerr<<"!!!Error:  Function tag must contain the id attribute.  Quitting."<<endl;

@@ -12,6 +12,19 @@ NFcore::Mapping::Mapping(unsigned int type, int index)
 	this->index = index;
 	this->m=NULL;
 }
+
+
+#ifdef RHS_FUNC
+//Razi: implemented to support RHS function: copy constructor
+//make a new mapping object for a test molecule, then assign the pointer accordingly
+Mapping::Mapping(const Mapping * mp, Molecule * m){
+	this->type = mp->type;
+	this->index = mp->index;
+	this->m=m;
+//	this->m=NULL;
+}
+#endif
+
 NFcore::Mapping::~Mapping()
 {
 	index=0;

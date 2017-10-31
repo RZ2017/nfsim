@@ -25,7 +25,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-
+//#define RAZI_DEBUG    //razi: includes some more messages for debug
 
 #ifndef NFSIM_HH_
 #define NFSIM_HH_

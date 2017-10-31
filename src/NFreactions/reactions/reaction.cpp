@@ -3,7 +3,7 @@
 
 
 #include "reaction.hh"
-
+#include "../../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -14,6 +14,7 @@ using namespace NFcore;
 FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, TransformationSet *transformationSet, System *s) :
 	BasicRxnClass(name,1,"",transformationSet,s)
 {
+	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with global function:"<< gf->getNiceName() <<" is created.\n";  mypause(-1);}
 	this->cf=0;
 	this->gf=gf;
 	for(int vr=0; vr<gf->getNumOfVarRefs(); vr++) {
@@ -32,6 +33,7 @@ FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, Transfor
 FunctionalRxnClass::FunctionalRxnClass(string name, CompositeFunction *cf, TransformationSet *transformationSet, System *s) :
 	BasicRxnClass(name,1, "", transformationSet,s)
 {
+	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with composite function:"<< cf->getName() <<" is created.\n";  mypause(-1);}
 	this->gf=0;
 	this->cf=cf;
 	this->cf->setGlobalObservableDependency(this,s);
@@ -144,6 +146,8 @@ void FunctionalRxnClass::printDetails() const {
 MMRxnClass::MMRxnClass(string name, double kcat, double Km, TransformationSet *transformationSet,System *s) :
 	BasicRxnClass(name,1,"",transformationSet,s)
 {
+	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tMM-RXN:"<<name<<" is created.\n";  mypause(-1);}
+
 	this->Km = Km;
 	this->kcat = kcat;
 	this->sFree=0;
@@ -188,6 +192,7 @@ void MMRxnClass::printDetails() const {
 BasicRxnClass::BasicRxnClass(string name, double baseRate, string baseRateName, TransformationSet *transformationSet, System *s) :
 	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
+	if ((RAZI_DEBUG) & (CREATE_REACTION)) {cout<<"\n\tBasic RXN:"<<name<<" with base rate:"<< baseRate <<" is created.\n";  mypause(-1);}
 	this->reactionType = BASIC_RXN;  //set as normal reaction here, but deriving reaction classes can change this
 	reactantLists = new ReactantList *[n_reactants];
 	//Set up the reactantLists
@@ -272,7 +277,7 @@ bool BasicRxnClass::tryToAdd(Molecule *m, unsigned int reactantPos)
 	//cout<<" got mappingSetId: " << m->getRxnListMappingId(rxnIndex)<<" size: " <<rl->size()<<endl;
 	//cout<< " testing whether to add molecule ";
 	//m->printDetails();
-	//cout<<" ... as a mormal reaction "<<this->name<<endl;
+	//cout<<" ... as a normal reaction "<<this->name<<endl;
 
 
 	//If this reaction has multiple instances, we always remove them all!
@@ -401,6 +406,25 @@ void BasicRxnClass::notifyRateFactorChange(Molecule * m, int reactantIndex, int 
 double BasicRxnClass::update_a()
 {
 	// Use the total rate law convention (macroscopic rate)
+
+
+#ifdef FIX_A   //Razi: Propensity of a reaction should be perhaps the minimum of reactant counts and not multiplication of it, later check
+	double c;
+	a = 1.0;
+	a = getCorrectedReactantCount(0);
+	if (n_reactants >= 1){
+		for(unsigned int i=1; i<n_reactants; i++) {
+			c=getCorrectedReactantCount(i);	a=(a<c)?a:c;    //min(a,getCorrectedReactantCount(i)
+			mypause(0);
+			cout<<"\nupdate a for reaction:"<< this->getName()<<"  i:"<<i<<" count:"<<c<< "  a:min(a,c):"<<a<<endl;
+			mypause(0);
+		}
+	}
+	a*=baseRate;
+	cout<<"\tupdating finished: a for reaction after applying baserate is:"<< a<<endl;
+
+#else
+
 	if(this->totalRateFlag) {
 		a=baseRate;
 		for(unsigned int i=0; i<n_reactants; i++)
@@ -414,6 +438,21 @@ double BasicRxnClass::update_a()
 		}
 		a*=baseRate;
 	}
+
+#endif
+
+
+	if ((RAZI_DEBUG & (SHOW_FIRE | CREATE_REACTION) && (this->getName().compare("XbPlusYbBind")==0))) {// && (this->getName().compare("XbPlusYbBind")==0) && 0){ //don't show anymore
+		int i,j,k;
+		cout <<"\tupdate_a() is called for Basic reaction:"<<this->name << " totalRateFlag:"<<totalRateFlag<<"   Base rate:"<<baseRate<<endl;
+		for(i=0; i<n_reactants; i++){
+			j = getCorrectedReactantCount(i);
+			cout<<"\tReactantlist "<<i<<"  Population Type: "<< isPopulationType[i] <<" Corrected count: "<< j<<endl;
+		}
+		cout <<"\tFinal a is :"<<a<<endl<<endl;
+		mypause(6000);
+	}
+
 	return a;
 }
 
@@ -449,7 +488,28 @@ int BasicRxnClass::getCorrectedReactantCount(unsigned int reactantIndex) const
 
 void BasicRxnClass::printFullDetails() const
 {
-	cout<<"BasicRxnClass: "<<name<<endl;
+	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)){
+		unsigned int i=0;
+//#ifdef RHS_FUNC
+//			cout<<"BasicRxnClass: "<<name<<"  has "<< n_reactants<<" reactants and "<< n_mappingsets<< " mappingSets and"<< n_productTemplates <<" Output products." << endl;  //razi added
+//#else
+			cout<<"BasicRxnClass: "<<name<<"  has "<< n_reactants<<" reactants and "<< n_mappingsets<< " mappingSets." << endl;  //razi added
+//#endif
+			int n_printItems= (n_mappingsets<=3? n_mappingsets: 3); //Razi changed to show only a few
+			for (i =0 ; i < n_printItems; i++){
+				if (mappingSet[i]){
+					try{
+						cout<<" Check the following line for i:"<<i<<" ...\n";
+						//cout<<"A-mappsingSet Id: "<< mappingSet[i]->getId() << " # of mappings:" << mappingSet[i]->getNumOfMappings() << " complex Id:" << mappingSet[i]->getComplexID()<<endl;
+					}catch(std::string err){ //int e string err
+						cout<<"BasicRxnClass::printFullDetails: Error occurred for i:"<<i<<"  Err:"<< err<< endl; mypause(5000);//" Err:"<<err<<" !!!"<<endl;
+					}
+				}else
+					cout<<"mappsingSet ["<<i<<"] for Reaction Class is not set yet." <<endl;
+			}
+			cout<<"------------------------------------------------------------------\n";
+	}
+	else cout<<"BasicRxnClass: "<<name<<endl; //razi commented
 	for(unsigned int i=0; i<n_reactants; i++)
 		reactantLists[i]->printDetails();
 }

@@ -156,6 +156,7 @@ namespace NFcore
 			Complex * getNextAvailableComplex();
 			void notifyThatComplexIsAvailable(int ID_complex);
 
+			int getComplexCount(void){return this->allComplexes.size();}; //Razi added
 			// output and printing
 			void printAllComplexes();
 			void purgeAndPrintAvailableComplexList(); /*< ONLY USE FOR DEBUG PURPOSES, AS THIS DELETES ALL COMPLEX BOOKKEEPING */
@@ -402,7 +403,18 @@ namespace NFcore
 			*/
 			void turnOnCSVformat() { this->csvFormat = true; };
 
+			bool verbose; //Razi added
+			void setverbose(bool v){verbose=v;}; //Razi added
+			bool getverbose(){return verbose;}; //Razi added
+
+#ifdef RHS_FUNC  //razi added to check reaction output products
+			void set_check_products(bool check_products_val) {check_products=check_products_val;};
+			bool get_check_products() {return check_products;};
+#endif
 		protected:
+#ifdef RHS_FUNC  //razi added to check reaction output products
+			bool check_products;
+#endif
 
 			///////////////////////////////////////////////////////////////////////////
 			// The invariant system properties, created when the system is created and before
@@ -477,7 +489,7 @@ namespace NFcore
 			//random data structures and variables used for optimization....
 			int **rxnIndexMap; /*!< maps reaction index values to a reaction, used for MoleculeTypes to
 			                        quickly lookup a reaction */
-
+							//Razi: rxnIndexMap[i][j]=k means that the ith Reaction in the system is the kth position in reaction-list of molecule type for reactant j
 
 			map <string,double> paramMap;
 
@@ -880,6 +892,19 @@ namespace NFcore
 			 * which is important when we want to update reactions and complexes */
 			void traverseBondedNeighborhood(list <Molecule *> &members, int traversalLimit);
 			static void breadthFirstSearch(list <Molecule *> &members, Molecule *m, int depth);
+#ifdef RHS_FUNC //Razi:  Added to support RHS functions
+			//This function is developed to copy a molecule and its connected subnetwork
+			void CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool verbose);
+			//void CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, vector <Molecule *> &origMs, vector <Molecule *> &copyMs, int maxDepth, int start_id);
+			Molecule * clone();  //lets use copy constructor
+			Molecule(Molecule &obj);   //copy constructor: use const Molecule &obj
+			Molecule * getCopy(){return copyMptr;};
+			Molecule * copyMptr;
+			Molecule * originalMptr;
+			void setCopy(Molecule * m){copyMptr = m;};
+			void setUniqueID(int ID);
+#endif
+
 			void depthFirstSearch(list <Molecule *> &members);
 
 			/* when we are ready to begin simulations, moleculeType calls this function
@@ -1058,6 +1083,8 @@ namespace NFcore
 			static const int OBS_DEPENDENT_RXN = 2;
 			static const int POP_RXN = 3;  // deprecated
 			static const int DOR2_RXN = 4;
+			static const int RHS_RXN = 5;  //Razi added to support RHS composite functions
+
 
 
 
@@ -1121,7 +1148,10 @@ namespace NFcore
 			void apply( vector <Molecule *> & product_molecules );
 			bool tagged;
 
-
+#ifdef RHS_FUNC    //Razi: Check connections between the reaction products
+			virtual bool checkReaction(); //Razi added to support RHS functions
+			unsigned int n_productTemplates;
+#endif
 
 		protected:
 			virtual void pickMappingSets(double randNumber) const=0;
@@ -1135,6 +1165,12 @@ namespace NFcore
 			unsigned int n_reactants;
 			unsigned int n_mappingsets;
 
+#ifdef RHS_FUNC //Razi added to support RHS functions
+			CompositeFunction *cfo;
+			MappingSet *ms;
+			MappingSet ** check_mappingSet;
+			int DORproductIndex; //the product with RHS function
+#endif
 			System * system;
 
 			double baseRate;

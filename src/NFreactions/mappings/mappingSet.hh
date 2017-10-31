@@ -6,6 +6,7 @@
 
 
 #include "../NFreactions.hh"
+#include "../../NFutil/setting.hh"  //Razi: added for test
 
 using namespace std;
 
@@ -36,6 +37,12 @@ namespace NFcore
 				@author Michael Sneddon
 			*/
 			MappingSet(unsigned int id, vector <Transformation *> &transformations);
+
+#ifdef RHS_FUNC
+			//Razi: implemented to support RHS function: copy constructor
+			MappingSet(MappingSet * ms, list <Molecule *> &Mols);
+			//MappingSet(MappingSet * ms, vector <Molecule *> &Mols);
+#endif
 
 			/*!
 			 	Destroys this MappingSet and any Mapping contained by this MappingSet

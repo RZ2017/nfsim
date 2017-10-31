@@ -3,6 +3,7 @@
 
 
 #include "../NFreactions.hh"
+#include "../../NFutil/setting.hh"   //Razi added to support RHS functions
 #include <algorithm>
 
 using namespace std;
@@ -167,6 +168,10 @@ namespace NFcore
 				MappingSet per reactant in the correct position in the array, please!).
 				@author Michael Sneddon
 			*/
+
+#ifdef RHS_FUNC //Razi added to support RHS functions
+			bool transform(MappingSet **mappingSets, bool testmode, bool check_ring);
+#endif
 			bool transform(MappingSet **mappingSets);
 
 			/*!
@@ -179,12 +184,50 @@ namespace NFcore
 			MappingSet *generateBlankMappingSet(unsigned int reactantIndex, unsigned int mappingSetId);
 
 
+#ifdef RHS_FUNC //razi added to support RHS functions
+			/*!
+				Returns the number of transformations that the template at reactantIndex given has.
+				@author Michael Sneddon
+			*/
+
+			int getNumOfTransformations(int reactantIndex, bool RHSfunc) const;
+			Transformation * getTransformation(int reactantIndex, int index, bool RHSfunc) const;
+			TemplateMolecule * getTemplateMolecule(unsigned int reactantIndex, bool RHSfunc) const;
+
+			TemplateMolecule * getTemplateMolecule(unsigned int reactantIndex);  //razi added here for backward compatibility
+			Transformation *getTransformation(int reactantIndex, int index);
+			int getNumOfTransformations(int reactantIndex);
+
+			void printDetails();
+			int RHSreactantIndex;   //Razi: contains the reactant index with RHS function
+			void setRHSFlag(bool val){includeRHSFunc=val;};
+			bool getRHSFlag(){return includeRHSFunc;};
+
+			//Razi: implemented to support RHS function. This facilitates directly applying a transformation on a set of molecules without using mappoing set object
+			bool DirectTransform(list<Molecule *> &productMptr);
+//
+#else
 			/*!
 				Returns the TemplateMolecule of a given reactant.  This function is primarily
 				used for initial initializations of a ReactionClass.
 				@author Michael Sneddon
 			*/
 			TemplateMolecule * getTemplateMolecule(unsigned int reactantIndex) const;
+
+			/*!
+				Returns the transformation object at the given index for the given reactant position
+				@author Michael Sneddon
+			*/
+			Transformation *getTransformation(int reactantIndex, int index) const { return transformations[reactantIndex].at(index); };
+
+
+			/*!
+				Returns the number of transformations that the template at reactantIndex given has.
+				@author Michael Sneddon
+			*/
+			int getNumOfTransformations(int reactantIndex) const { return transformations[reactantIndex].size();};
+
+#endif
 
 			/*!
 				Get the number of reactants in the rule governed by this TransformationSet.  This
@@ -297,6 +340,17 @@ namespace NFcore
 			double getSymmetryFactor() const { return symmetryFactor; };
 			void   setSymmetryFactor(double val) { symmetryFactor = val; useSymmetryFactor = true; };
 
+#ifdef RHS_FUNC //razi added to support RHS functions
+			TransformationSet(vector <TemplateMolecule *> reactantTemplates,
+					vector <TemplateMolecule *> addMoleculeTemplates,
+					vector <TemplateMolecule *> OutputTemplates);
+			bool addLocalFunctionReference(TemplateMolecule *t, string PointerName, int scope, bool RHSfunc);
+			unsigned int getNproducts() const { return n_productTemplates;};
+
+			bool includeRHSFunc; //=1 if any RHS function is included
+#endif
+
+
 		protected:
 
 			/*!
@@ -322,6 +376,16 @@ namespace NFcore
 
 			/*!	The array of TemplateMolecules that represent the reactants */
 			TemplateMolecule ** reactants;
+
+#ifdef RHS_FUNC   //Razi Added to support RHS functions
+			int find(TemplateMolecule *t, bool RHSfunc);
+			TemplateMolecule ** productTemplates;
+			unsigned int n_productTemplates;
+			/*!	A vector that holds the actual Transformation objects on product patterns, used only for RHS functions	*/
+//vector <Transformation *> * product_transformations;
+			//bool includeRHSFunc; //=1 if any RHS function is included
+#endif
+
 
 			/*!	The array of TemplateMolecules that represent the added molecules.
 			 *   Not sure if this will be used.  --Justin */

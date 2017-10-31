@@ -8,6 +8,7 @@
 
 
 #include "reactionSelector.hh"
+#include "../../NFutil/setting.hh"  //Razi added to add debugging messages 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -69,11 +70,17 @@ double DirectSelector::getNextReactionClass(ReactionClass *&rc)
 		if(randNum <= a_sum)
 		{
 			rc = reactionClassList[r];
+			if	(RAZI_DEBUG & RUN_REACTIONS){
+				cout<<"       DirectSelector::getNextReactionClass, RND:"<< randNum<<endl;
+				for(int r=0; r<n_reactions; r++) cout<<"         [r,reaction, A]:= ["<<r<<","<<reactionClassList[r]->getName()<<","<<reactionClassList[r]->get_a()<<"],    \n";
+				cout<<"Sum: "<< last_a_sum << "  reaction id:"<< rc->getName() << "   offset:"<< randNum-last_a_sum<<endl;
+			}
 			return (randNum-last_a_sum);
 		}
 		last_a_sum = a_sum;
 	}
 
+	//Razi: retry for the next time
 	this->refactorPropensities();
 	return getNextReactionClass(rc);
 

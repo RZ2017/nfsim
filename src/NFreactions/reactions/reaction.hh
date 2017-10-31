@@ -12,6 +12,100 @@ using namespace std;
 namespace NFcore
 {
 
+
+#ifdef RHS_FUNC //Razi added to support RHS functions
+
+
+	//Razi: This class includes reactions with local functions applied to the right hand side
+    //The function is assumed to be a composite fucntion, where the global part defines the rate and the local function typically
+   // is a condition on the output products templates.
+	// Later, we may need to develop a class that supports functions applied to both input reactants and output products
+	class RHSRxnClass : public ReactionClass {
+		public:
+		RHSRxnClass(
+					string name,
+					double baseRate,
+					string baseRateName,
+					TransformationSet *transformationSet,
+					CompositeFunction *function,
+					vector <string> &lfArgumentPointerNameList,
+					System *s);
+			virtual ~RHSRxnClass();
+
+
+			virtual void init();
+			virtual void prepareForSimulation() {};
+
+
+
+			virtual bool tryToAdd(Molecule *m, unsigned int reactantPos);
+			virtual void remove(Molecule *m, unsigned int reactantPos);
+			virtual double update_a();
+
+			//Razi: Check if needed: virtual int getDORreactantPosition() const { return DORreactantIndex; };
+
+			//JJT: checks if there's an existing mapping set in *m equal to *ms that maps to this reaction
+			//virtual int checkForCollision(Molecule *m, MappingSet* ms,int rxnIndex);
+			//JJT: checks if there's an existing mapping set in *m equal to *ms that maps to this reaction
+			//Razi: Check if needed [comes from basic reaction class]:
+			virtual int checkForEquality(Molecule *m, MappingSet* ms,int rxnIndex, ReactantList*);
+
+
+
+			virtual void notifyRateFactorChange(Molecule * m, int reactantIndex, int rxnListIndex);
+			virtual int getReactantCount(unsigned int reactantIndex) const;
+			virtual int getCorrectedReactantCount(unsigned int reactantIndex) const;
+
+			virtual void printDetails() const;
+			virtual void printFullDetails() const {};
+
+			//void directAddForDebugging(Molecule *m);
+			//void printTreeForDebugging();
+
+			//static void test1(System *s);
+
+			/*moved to reactionClass
+			//Razi added to handle RHS functions
+			unsigned int n_productTemplates;
+			virtual bool checkReaction();   //clone reactants
+			MappingSet ** check_mappingSet; //include pointers to test molecules
+			*/
+
+		protected:
+
+			virtual double evaluateLocalFunctions(MappingSet *ms);
+
+			virtual void pickMappingSets(double randNumber) const;
+
+			ReactantList **reactantLists;
+			ReactantList **productLists;
+
+//razi: moved to reactionClass			MappingSet *ms;
+//razi: moved to reactionClass			CompositeFunction *cfo;
+			int n_argMolecules;
+			int * argIndexIntoMappingSet;
+			Molecule ** argMappedMolecule;
+			int * argScope;
+
+
+//			bool includeRHSFunc;
+
+			//Parameters to keep track of local functions
+//razi moved to reactionClass			int DORproductIndex;
+			ReactantList *rl;  //Razi: From Basic Rxn
+
+
+			//vector <int> argIndexIntoMappingSet;
+
+			//vector <LocalFunction *> lfList;
+			//vector <int> indexIntoMappingSet;
+			//vector <double> localFunctionValue;
+
+	};
+
+#endif //RHS_FUNC
+
+
 	class BasicRxnClass : public ReactionClass {
 		public:
 			BasicRxnClass(string name, double baseRate, string baseRateName, TransformationSet *transformationSet, System *s);
@@ -37,6 +131,9 @@ namespace NFcore
 
 			ReactantList **reactantLists;
 
+//#ifdef RHS_FUNC //Razi added to support RHS functions, 			//check if needed
+//			ReactantList ** productLists;
+//#endif
 			ReactantList *rl;
 			MappingSet *ms;
 	};
@@ -125,6 +222,15 @@ namespace NFcore
 
 			CompositeFunction *cf;
 
+/*
+#ifdef RHS_FUNC //Razi added to support RHS functions
+			//check if needed
+			ReactantList **productLists;
+			CompositeFunction *cfo;
+			bool includeRHSFunc;
+#endif
+*/
+
 			//Parameters to keep track of local functions
 			int DORreactantIndex;
 
@@ -198,6 +304,15 @@ namespace NFcore
 
 			CompositeFunction *cf1;
 			CompositeFunction *cf2;
+
+/*
+#ifdef RHS_FUNC //Razi added to support RHS functions
+			//check if needed
+			ReactantList **productLists;
+			CompositeFunction *cfo1;
+			CompositeFunction *cfo2;
+#endif
+*/
 
 			//Parameters to keep track of local functions
 			int DORreactantIndex1;

@@ -2,7 +2,7 @@
 
 
 #include "NFcore.hh"
-
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 using namespace std;
 using namespace NFcore;
@@ -11,6 +11,11 @@ using namespace NFcore;
 
 ReactionClass::ReactionClass(string name, double baseRate, string baseRateParameterName, TransformationSet *transformationSet, System *s)
 {
+	bool verbose=false;
+	if (RAZI_DEBUG & CREATE_REACTION)
+		verbose = system->getverbose();
+
+
 	//cout<<"\n\ncreating reaction "<<name<<endl;
 	this->system=s;
 	this-> tagged = false;
@@ -52,6 +57,17 @@ ReactionClass::ReactionClass(string name, double baseRate, string baseRateParame
 		}
 
 		//Find the one with the least sym comp bonds...
+
+
+#ifdef FIX_BUG1   //Razi: This bypasses the condition of having less symmetric sites, because it causes some problem in evaluating local functions.
+		//The local function tries to be evalaued on main reactant
+		//For now we bypassing the condition of having less symmetric sites and chose the reactant that appears earlier on the transformationSet object and has at least one mapGenerator
+		if (hasMapGenerator.size()<1) {
+			cout<<"There is no molecule with at least one transformation for this reactant, Perhaps something is wrong, I am quitting!!!\n"; exit(1);
+		}else{
+				curTemplate = tmList.at(hasMapGenerator.at(0));
+		}
+#else
 		int minSymSites = 999999;
 		for(unsigned int k=0; k<hasMapGenerator.size(); k++) {
 			if(tmList.at(hasMapGenerator.at(k))->getN_symCompBonds()<minSymSites) {
@@ -59,12 +75,14 @@ ReactionClass::ReactionClass(string name, double baseRate, string baseRateParame
 				minSymSites = curTemplate->getN_symCompBonds();
 			}
 		}
-
+#endif
 		reactantTemplates[r] = curTemplate;
 		tmList.clear(); hasMapGenerator.clear();
 	}
 	mappingSet = new MappingSet *[n_mappingsets];
-
+#ifdef RHS_FUNC //Razi added to support RHS functions
+	check_mappingSet = new MappingSet *[n_mappingsets];
+#endif
 
 
 	/* create blank mappingSets for the added molecules. These will be used
@@ -191,6 +209,12 @@ ReactionClass::ReactionClass(string name, double baseRate, string baseRateParame
 			cout<<endl;
 		}
 	}
+	/*
+	if (verbose){// cls();
+		for(unsigned int r=0; r<n_reactants; r++)
+			try{cout<<"\n\n\nAAA3-DORreactantIndex:"<<r<<"   MolType:"<< reactantTemplates[r]->getMoleculeType()->getName()<<endl;}catch(...){cerr<<"Error in AAA3\n";}
+	}
+	*/
 
 	if ( this->transformationSet->usingSymmetryFactor() )
 	{	// new general method for handling reaction center symmetry
@@ -321,12 +345,44 @@ void ReactionClass::printDetails() const {
 
 
 void ReactionClass::fire(double random_A_number) {
+
+	bool verbose = false;
+	if (RAZI_DEBUG & (SHOW_FIRE | SHOW_RHS))
+		verbose = this->system->getverbose();
+
+
 	//cout<<endl<<">FIRE "<<getName()<<endl;
 	fireCounter++;
+
+	if(verbose){
+		cout<<"\n=======================================================================================\n";
+		if (RAZI_DEBUG & SHOW_FIRE){ // & ((name.compare(TEST_REAC)==0) | (TEST_REAC == "ALL")) ){
+			this->printFullDetails();  //mypause(-1);
+		}else{
+			this->printDetails();
+		}
+	}
+
+
+	//cout<<"Now, you printed the details. Lets continue on picking a random molecule and fire the reaction.\n";
 
 
 	// First randomly pick the reactants to fire by selecting the MappingSets
 	this->pickMappingSets(random_A_number);
+
+
+
+	if(verbose){ //Razi commented & ((getName()==TEST_REAC) | (TEST_REAC == "ALL")) ){
+		cout<<"These molecules are finally chosen:\n";  //show complexes that are chosen
+		for (unsigned int ii=0; ii< n_reactants; ii++){
+			if (mappingSet[ii])
+				cout<<"\tMapping id:"<< mappingSet[ii]->getId()<< "   complex id:"<< mappingSet[ii]->getComplexID()<<" molecule list id:"<< mappingSet[ii]->get(0)->getMolecule()->getMolListId() <<" molecule id:"<< mappingSet[ii]->get(0)->getMolecule()->getUniqueID() <<  " MT:"<< mappingSet[ii]->get(0)->getMolecule()->getMoleculeTypeName()<<endl;
+			else
+				cout<<"mappsingSet ["<<ii<<"] for Reaction Class is not set yet." <<endl;
+		}
+
+	}
+
 
 
 	// Check reactants for correct molecularity:
@@ -338,7 +394,7 @@ void ReactionClass::fire(double random_A_number) {
 
 
 	// output something if the reaction was tagged
-	if(tagged) {
+	if(tagged && verbose) {
 		cout<<"#RT "<<this->rxnId<<" "<<this->system->getCurrentTime();
 		for(unsigned int k=0; k<n_reactants; k++) {
 			cout<<" [";
@@ -352,9 +408,41 @@ void ReactionClass::fire(double random_A_number) {
 	}
 
 
+#ifdef RHS_FUNC
+	// Razi: the first check is to make sure that the products are not connected
+	// Check #1: Check connections between the reaction products
+
+	// Check #2: if RHS function is included, we need to keep firing reaction, until the output complexes satisfy the function
+	// in order to do so, we keep picking reactants, make copies, check the output and repeat again
+	// If retry until a predefined number of time defined as RHS_maxRETRY, setting this number to 1 results in true rates !
+	// Steps:
+	//    1-make a copy of selected complexes
+	//    2-apply the transformation on the cloned objects
+	//    3-check the RHS function
+
+
+	if (!this->checkReaction()){
+		if (verbose || 1) cout<<"\t\tReaction:" << name <<" did not pass the output product test !!!\n";
+		return;
+	}else{
+		if (verbose || 1) cout<<"output check passed ....\n";
+	}
+
+
+
+#endif
+
+
+
 	// Generate the set of possible products that we need to update
 	// (excluding new molecules, we'll get those later --Justin)
 	this->transformationSet->getListOfProducts(mappingSet,products,traversalLimit);
+	if(verbose){
+		cout<<"Product molecules are: ";
+		for( molIter = products.begin(); molIter != products.end(); molIter++ ) {
+			if (*molIter) cout<<"M:"<<(*molIter)->getMoleculeTypeName()<<"_Lid"<< (*molIter)->getMolListId()<<",    "; else cout<< " invalid, ";
+		} cout<<endl;
+	}
 
 
 	// display product molecules for debugging..
@@ -532,12 +620,16 @@ void ReactionClass::fire(double random_A_number) {
 	} // done updating complex-scoped local functions
 
 
-	// display final product molecules for debugging..
-	//for( molIter = products.begin(); molIter != products.end(); molIter++ ) {
-	//	cout<<">>molecule: "<<(*molIter)->getMoleculeTypeName()<<endl;
-	// 	(*molIter)->printDetails();
-	//  	cout<<"<<"<<endl;
-	//}
+	//display final product molecules for debugging..
+
+#if RAZI_DEBUG == 0x0FFF
+	if(system->getverbose() && 0 && (RAZI_DEBUG & SHOW_RHS))
+	for( molIter = products.begin(); molIter != products.end(); molIter++ ) {
+		cout<<">>molecule: "<<(*molIter)->getMoleculeTypeName()<<endl;
+	 	(*molIter)->printDetails();
+	  	cout<<"<<"<<endl;
+	} mypause(1000);
+#endif
 
 
 	//Tidy up
@@ -548,8 +640,192 @@ void ReactionClass::fire(double random_A_number) {
 
 
 
+#ifdef RHS_FUNC
+
+bool ReactionClass::checkReaction()   //clone reactants
+{
+
+	//return true;  //Razi: bypass check only for test, later uncomment
+	bool verbose = false;
+	if (RAZI_DEBUG & (SHOW_FIRE | SHOW_RHS))
+		verbose = this->system->getverbose();
+	//verbose = false;
+	if (verbose) cout<<"RxnClass:: checkReaction() is called.\n";
 
 
+
+	bool check_products =system->get_check_products();
+	if ((this->reactionType != RHS_RXN) && (!check_products)){
+		//cout<<"skip product checking. neither RHS function exist, nor ring check is active.\n";
+		return true;
+	}
+	//proceed with checking output reactants
+
+
+	list <Molecule *>  origMs(100); //at most 100 connected molecules for each reactant
+	list <Molecule *>  copyMs(100);
+	vector<list <Molecule *> >  AllcopyMs(10, list <Molecule *>(100)); //at most 10 reactants per reaction rule
+	vector<list <Molecule *> >  AllorigMs(10, list <Molecule *>(100));
+	Molecule * copyM;
+	int maxDepth=10;
+	bool result=true;
+
+
+//	try{
+
+	//clone molecules and complexes
+	//int start_id = Molecule::uniqueIdCount+1000;
+	int start_id = mappingSet[0]->get(0)->getMolecule()->getUniqueIdCount();
+	start_id=start_id+1000; //make sure that test molecules do not overlap with actual molecules
+
+
+
+	if(verbose){mappingSet[0]->get(0)->getMolecule()->printDetails();mappingSet[1]->get(0)->getMolecule()->printDetails();}
+
+	//razi: lets first copy all reactants and their connected molecules
+	for(unsigned int k=0; k<n_reactants; k++) {
+
+		AllcopyMs[k].clear();
+		AllorigMs[k].clear();
+
+		if (verbose){
+			cout<<"Copying molecules: ["<<k+1<<"/"<<n_reactants<<"] with total number of "<< mappingSet[k]->getNumOfMappings() <<" mappings"<<endl; //mypause(-1);
+		}
+		//for(unsigned int p=0; p<mappingSet[k]->getNumOfMappings();p++) {
+		Molecule *origM = mappingSet[k]->get(0)->getMolecule();
+//cout<<"orig molecule before copying"; origM->printDetails(); mypause(-1);
+
+		//find all other connected molecules
+		origMs.clear(); copyMs.clear();
+		origM->CopybreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
+		start_id=start_id+copyMs.size();
+
+
+		//productMptr.push_back(copyM);
+		if (verbose) {
+//origM->printDetails();
+			cout<<"one molecule is cloned, name:"<< origM->getMoleculeTypeName() <<"   mol id: "<<  origM->getUniqueID() <<"-->"<< copyM->getUniqueID()<<"   complex id: "<<  origM->getComplexID() <<"-->"<< copyM->getComplexID()<<endl;
+//cout<<"copy molecule after copying"; copyM->printDetails(); mypause(-1);
+		}
+
+		AllorigMs[k] = origMs; //keep pointer to all original molecules
+		AllcopyMs[k] = copyMs; //keep pointer to all copy molecules
+
+		ms = new MappingSet(mappingSet[k], copyMs);
+		//mappingSet[k]->printDetails();ms->printDetails();
+
+		check_mappingSet[k] = ms;
+
+	}
+
+
+
+	//problem here
+	if (transformationSet->getNmappingSets() != n_reactants){
+		cerr<<"Inconsistency between the number of reactants"<<n_reactants <<" and transformations:"<< transformationSet->getNmappingSets()<<"!!!";
+		result = false; //exit(0);
+	}
+
+
+	//proceed with checking the reaction
+	if (result){
+	//cout<<"press a key to apply transformation...."; mypause(-1);
+
+		//if(verbose){mappingSet[0]->get(0)->getMolecule()->printDetails();check_mappingSet[0]->get(0)->getMolecule()->printDetails();mappingSet[1]->get(0)->getMolecule()->printDetails();			check_mappingSet[1]->get(0)->getMolecule()->printDetails();} //mypause(-1);		}
+
+
+
+
+
+
+		//in this block, check if the products are disjoint molecules
+		if (check_products){
+			result = this->transformationSet->transform(check_mappingSet, true, false);  //apply the transformation on test molecules
+			if ((verbose |1) && (!result)){
+				cout<<"The reaction does not pass the output molecularity check. Perhaps an alternative connection exist after unbinfding molecules...\n";
+			}
+			if ((verbose |1) && (result)){
+				cout<<"The reaction passed the output molecularity check.\n";
+			}
+
+		}else{
+			//apply the reaction to the test molecules
+			this->transformationSet->transform(check_mappingSet, true, false);  //apply the transformation on test molecules
+		}
+
+
+
+
+		//razi: now it is time to check the RHS function
+		if (result && (this->reactionType == RHS_RXN)){
+			//cout<<"press a key to evaluate RHS func(1)...."; mypause(-1);
+
+			DORproductIndex = this->transformationSet->RHSreactantIndex;
+		//cout<<"DORproductIndex:"<<  DORproductIndex <<endl;
+			//Razi: apply the composite function cfo on molecule defined by DORproductIndex
+			Molecule * mol = check_mappingSet[DORproductIndex]->get(0)->getMolecule();
+
+			if (!mol){ cerr<<"Error when running RHS reaction. No valid molecule to apply RHS function..."; exit(0);}
+			int scope = LocalFunction::SPECIES; 		//razi: check if the scope is correct !!!!LocalFunction::MOLECULE   LocalFunction::RHS_SPECIES      LocalFunction::RHS_MOLECULE
+		//cout<<"press a key to evaluate RHS func(2)...."; mypause(-1);
+
+
+			// just for test, later delete
+			double res = cfo->evaluateOnProduct(mol, scope, CompositeFunction::EvalConditionalPart, false); //verbose=false
+			if(res==0) {
+				if (verbose|1) cout<<"\t\tRHS Reaction:" << name <<" DID NOT pass the RHS test. Continue firing ....\n";
+				result=false;
+			}else {
+
+				if (verbose|1) cout<<"\t\tRHS Reaction:" << name <<" passed the RHS test. Continue firing ....\n";
+				result=true; //razi: the result is either pass or fail
+			}
+
+		}
+	}
+
+
+
+
+
+
+
+
+
+	//razi: cleanup
+	//delete test molecules and mappings
+	for(unsigned int k=0; k<n_reactants; k++){
+		if (check_mappingSet[k]){
+			if (verbose) cout<<"k:"<<k<< "  pointer:"<< check_mappingSet[k]<< " mol id:" <<check_mappingSet[k]->get(0)->getMolecule()->getUniqueID()<<endl;
+			delete check_mappingSet[k];
+		}else break;
+	}
+	for(unsigned int k=0; k<n_reactants; k++){
+		if(AllorigMs[k].size()>0){
+			for (list <Molecule *>::iterator ii=AllorigMs[k].begin(); ii!=AllorigMs[k].end();ii++)
+				if (*ii) {(*ii)->copyMptr=0; (*ii)->setCopy(NULL); if (verbose) cout<<"copy cleared for molecule id:"<<(*ii)->getUniqueID()<<endl;} //forget the copies made when firing this reactions
+		}
+		//else{if (verbose) cout<<"Can not find AllorigMs["<<k<<"]\n"; break;}
+	}
+	for(unsigned int k=0; k<n_reactants; k++){
+		if (verbose) cout<<"deleting all copy molecules for reactant:"<<k<<endl; mypause(10);
+		if(AllcopyMs[k].size()>0){
+			for (list <Molecule *>::iterator jj=AllcopyMs[k].begin(); jj!=AllcopyMs[k].end();jj++){
+				if (*jj){
+					//if (verbose) cout<<"deleting one copy molecule:" << (*jj)->getUniqueID()<<" for reactant:"<<k<<endl;
+					try{delete (*jj);}	catch (...){ cout<<"Unknown Error when Firing RHS reaction!";}
+				}
+				//else {if (verbose)cout<<"  null pointer, no molecule is deleted"<<endl; mypause(100);}
+			}
+		}
+		//else {if (verbose) cout<<"no molecule in AllcopyMs["<<k<<"]\n"; break;}
+	}
+
+	//if (verbose) {cout<<"RHS evaluation on test molecule is finished. result: "<<result<<endl;mypause(20);}
+
+	return result;
+}
+#endif
 
 
 

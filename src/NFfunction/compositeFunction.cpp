@@ -6,6 +6,7 @@
  */
 
 #include "NFfunction.hh"
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 
 
 
@@ -26,6 +27,9 @@ CompositeFunction::CompositeFunction(System *s,
 	this->name = name;
 	this->originalExpression=expression;
 	this->parsedExpression="";
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+	this->RHS = false; //false;
+#endif
 
 
 	this->n_params=paramNames.size();
@@ -48,7 +52,16 @@ CompositeFunction::CompositeFunction(System *s,
 	}
 
 	p=0;
+
+	if (RAZI_DEBUG & CREATE_FUNC){
+		cout<<"\tCreating Composite Function for:\t"<<name<<" expression:" << expression<<endl;
+		cout<<"\t\tParams: \t";		for(unsigned int an = 0; an < this->n_params; an++) cout<<this->paramNames[an]<< ", "; cout<<endl;
+		cout<<"\t\tArguments: \t";		for(unsigned int an = 0; an < this->n_args; an++) cout<<this->argNames[an]<< ", "; cout<<endl;
+		cout<<"\t\tFunctions: \t";		for(unsigned int an = 0; an < this->n_allFuncs; an++) cout<<this->allFuncNames[an]<< ", "; cout<<endl;
+	}
 }
+
+
 CompositeFunction::~CompositeFunction()
 {
 	delete [] allFuncNames;
@@ -98,6 +111,7 @@ void CompositeFunction::setGlobalObservableDependency(ReactionClass *r, System *
 //or reading in reactions
 void CompositeFunction::finalizeInitialization(System *s)
 {
+
 	//first, find the global functions by name
 	vector <GlobalFunction *> gf_tempVector;
 	for(unsigned int i=0; i<n_allFuncs; i++) {
@@ -160,8 +174,9 @@ void CompositeFunction::finalizeInitialization(System *s)
 		}
 	}
 
-//	cout<<"now the expression is: "<<parsedExpression<<endl;
-
+	if (s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)){
+		cout<<"Finalizing Composite Functions. The parsed expression is: "<<parsedExpression<<endl;
+	}
 
 	///////// do the same for local functions here (can be a bit tricky, because different
 	///////// composite functions will have different numbers of arguments
@@ -185,6 +200,9 @@ void CompositeFunction::finalizeInitialization(System *s)
 
 						if(possibleArg==argNames[a]) {
 
+#ifdef RHS_FUNC
+							if (s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)) cout<<" Initializing a function possibleArg:" << possibleArg<< "   argNames[a]:"<< argNames[a]<<endl;
+#endif
 							string identifier = "_"+argNames[a];
 							parsedExpression.replace(openPar,closePar-openPar+1,identifier);
 
@@ -197,7 +215,12 @@ void CompositeFunction::finalizeInitialization(System *s)
 							if(!found) {
 								lfIndexValues.push_back(f);
 								lfReferenceName.push_back(lfNames[f]+identifier);
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+								lfScope.push_back(a);    //change the scope to RHSLocal
+#else
 								lfScope.push_back(a);
+#endif
+
 							}
 
 							break; //break cause we're done with this scope...
@@ -227,7 +250,10 @@ void CompositeFunction::finalizeInitialization(System *s)
 
 	// Parse out the ability to get reactant counts in composite reactions
 
-
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+	if (RHS){return;}   //Razi: This is for regular LHS composite functions
+#endif
+	//Razi: This is for regular LHS composite functions
 	int maxReactantIndex = 0;
 	string::size_type sPos=parsedExpression.find("reactant_");
 	for( ; sPos!=string::npos; sPos=parsedExpression.find("reactant_",sPos+1)) {
@@ -312,27 +338,49 @@ void CompositeFunction::updateParameters(System *s)
 
 void CompositeFunction::prepareForSimulation(System *s)
 {
+	bool verbose = false;
+	if (RAZI_DEBUG & CREATE_FUNC) verbose = s->getverbose();
+
 	try {
+		if (verbose){  cout<<"Preparing composite function for simulation. Func:"<< this->name<<endl; mypause(-1);}
+
 		p=FuncFactory::create();
 		for(int f=0; f<n_gfs; f++) {
 			p->DefineVar(gfNames[f],&gfValues[f]);
+			if (verbose)  cout<<"\tSet Global Func:"<< gfNames[f] <<" Value:" << gfValues[f]<<endl;
 		}
 
 		//Define local function variables here...
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+		if(RHS){
+			for(int f=0; f<this->n_refLfs; f++) {
+				p->DefineVar(refLfRefNames[f],0);
+				if (verbose)  cout<<"\tSet Local Func:"<<refLfRefNames[f] <<" Value:" << 0<<endl;
+			}
+		}else
+#endif
+		//Razi: Applies to LHS functions
 		for(int f=0; f<this->n_refLfs; f++) {
 			p->DefineVar(refLfRefNames[f],&refLfValues[f]);
+			if (verbose)  cout<<"\tSet Local Func:"<<refLfRefNames[f] <<" Value:" << refLfValues[f]<<endl;
 		}
 
 		for(unsigned int i=0; i<n_params; i++) {
 			p->DefineConst(paramNames[i],s->getParameter(paramNames[i]));
+			if (verbose)  cout<<"\tParam:"<<paramNames[i] <<" Value:" << s->getParameter(paramNames[i]) <<endl;
 		}
 
+#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
+		if(!RHS)  //run only for LHS functions
+#endif
 		for(int r=0; r<n_reactantCounts; r++) {
 			string reactantStr = "reactant_"+NFutil::toString((r+1));
 			p->DefineVar(reactantStr,&reactantCount[r]);
+			if (verbose)  cout<<"\tReactant:"<<reactantStr <<" Count:" << reactantCount[r] <<endl;
 		}
 
 		p->SetExpr(this->parsedExpression);
+		if(verbose){ cout<<"\tExpression:"<<this->parsedExpression<<endl;}
 	}
 	catch (mu::Parser::exception_type &e)
 	{
@@ -350,7 +398,11 @@ void CompositeFunction::prepareForSimulation(System *s)
 
 void CompositeFunction::printDetails(System *s) {
 
+#ifdef RHS_FUNC
+	if(RHS) cout<<" RHS Composite : '"<< this->name << "()'"<<endl; else  cout<<" LHS Composite: '"<< this->name << "()'"<<endl;
+#else
 	cout<<"Composite Function: '"<< this->name << "()'"<<endl;
+#endif
 	cout<<" = "<<this->originalExpression<<endl;
 	cout<<" parsed expression = "<<this->parsedExpression<<endl;
 	cout<<"   -Function References:"<<endl;
@@ -381,8 +433,21 @@ void CompositeFunction::printDetails(System *s) {
 	if(p!=0)
 		cout<<"   Function last evaluated to: "<<FuncFactory::Eval(p)<<endl;
 
+#ifdef RHS_FUNC //Razi added to support RHS function
+	else
+		cout<<"   The Function has evaluated yet"<<endl;
+#endif
 
 
+	if (!(RAZI_DEBUG & (CREATE_FUNC | SHOW_FIRE))) return;
+
+	if(n_lfs>0) {
+		for(int i=0; i<n_refLfs; i++) {
+			//cout<<" embedded local fun:"<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<refLfScopes[i]<< endl;
+			cout<<" Composite Func: embedded local fun:"<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<refLfScopes[refLfInds[i]] <<endl;
+		}
+	}
+	cout<< "Number of reactants is: "<< this->n_reactantCounts <<endl;
 //	cout<<"trying something new..."<<endl;
 //	Molecule ** molList = new Molecule *[2];
 //	molList[0] = s->getMoleculeTypeByName("Receptor")->getMolecule(0);
@@ -400,7 +465,9 @@ void CompositeFunction::printDetails(System *s) {
 
 
 void CompositeFunction::addTypeIMoleculeDependency(MoleculeType *mt) {
-
+#ifdef RHS_FUNC //Razi added to support RHS function
+	if (RHS) return;  //irrelevant for RHS function
+#endif
 	for(int i=0; i<n_lfs; i++) {
 		// add typeI dependency, which means this local function influences
 		//  the propensity of some DOR reaction for which mt is the head template molecule.
@@ -414,10 +481,15 @@ void CompositeFunction::addTypeIMoleculeDependency(MoleculeType *mt) {
 
 
 double CompositeFunction::evaluateOn(Molecule **molList, int *scope, int *curReactantCounts, int n_reactants) {
-	//cout << "CompositeFunction::evaluateOn()" << endl;
+bool verbose=false;
+#ifdef RHS_FUNC //Razi added to support RHS function
+	if (RHS){ cerr<<" Error,  calling wrong function evaluateOn for RHS function..."<<endl; return -1;}  //irrelevant for RHS function
+	//if (RHS && (RAZI_DEBUG & SHOW_FIRE)) verbose=true;
+#endif
+	if (verbose) cout << "CompositeFunction::evaluateOn() for "<<name<<endl;
 
 	//1 evaluate all global functions
-	//cout << "n_gfs=" << n_gfs << endl;
+	if (verbose) cout << "n_gfs=" << n_gfs << "     ";
 	for(int f=0; f<n_gfs; f++) {
 		gfValues[f]=FuncFactory::Eval(gfs[f]->p);
 	}
@@ -430,9 +502,11 @@ double CompositeFunction::evaluateOn(Molecule **molList, int *scope, int *curRea
 	if(n_lfs>0) {
 
 		//cout<<"evaluating composite function with local dependencies."<<endl;
+		if (verbose) cout << "scope[0]=" << scope[0] << "     ";
+		if (verbose) cout << "molList[0]" << molList[0]->getMoleculeTypeName() << "     ";
 		if(molList!=0 && scope!=0) {
 
-			//cout << "n_refLfs=" << n_refLfs << endl;
+			if (verbose) cout << "n_refLfs=" << n_refLfs << endl;
 			for(int i=0; i<n_refLfs; i++) {
 				//cout<<"--- evaluating: "<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<scope[refLfScopes[i]]<<endl;
 				try{
@@ -468,10 +542,83 @@ double CompositeFunction::evaluateOn(Molecule **molList, int *scope, int *curRea
 	for(int r=0; r<n_reactantCounts; r++) {
 		reactantCount[r]=curReactantCounts[r];
 	}
-
-
-
-
 	//evaluate this function
 	return FuncFactory::Eval(p);
+
 }
+
+
+#ifdef RHS_FUNC //Razi added to support RHS function
+
+void CompositeFunction::setRHSFlag(bool val) {
+	RHS=val;
+
+	cout<<"\n\nClean up the unnecessary links (e.g. type I, type II molecule type) ....\n\n\n"; mypause(-1);
+
+}; //set to true for RHS, default: false
+
+
+//Razi: directly apply composite function on a test molecule [test product of a reaction]
+double CompositeFunction::evaluateOnProduct(Molecule *mol, int scope, int evaluationType, bool verbose) {
+
+	if (verbose) {cout << "RHS CompositeFunction::evaluateOn() for "<<name<<endl;}// mypause(-1);};
+
+
+	if ((evaluationType!=EvalGlobalPart) && (evaluationType!=EvalConditionalPart) && (evaluationType!=EvalBothParts)){
+		cout<<"Invalid evaluation type when evaluating RHS function.\n"; exit(1);
+	}
+
+
+	//1 evaluate all global functions
+	if (verbose) cout << "n_gfs=" << n_gfs << endl;
+	for(int f=0; f<n_gfs; f++) {
+		if (evaluationType==EvalConditionalPart)
+			gfValues[f]=1; //only evaluate the conditional part, so all global parts is set to 1
+		else
+			gfValues[f]=FuncFactory::Eval(gfs[f]->p);
+	}
+
+	//2 evaluate all local functions
+	if (verbose) cout << "n_lfs=" << n_lfs << endl;
+	if(n_lfs>0) {
+		if (verbose) cout << "scope[0]=" << scope << endl;
+		//if (verbose) cout << "molList[0]" << molList[0]->getMoleculeTypeName() << endl;
+		if (verbose) cout<<"evaluating composite function with local dependencies."<<endl;
+
+		if (evaluationType==EvalGlobalPart){
+			for(int i=0; i<n_refLfs; i++)
+				this->refLfValues[i] = 1;   //just evaluate global parts and set all local functions to 1
+
+		}else{
+
+			if(mol!=0 && ((scope == LocalFunction::SPECIES)|| (mol!=0 && scope == LocalFunction::MOLECULE)))
+			{
+				if (verbose) cout << "n_refLfs=" << n_refLfs << endl;
+				for(int i=0; i<n_refLfs; i++) {
+					//if ((RAZI_DEBUG) & SHOW_FIRE) cout<<"--- evaluating: "<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<scope[refLfScopes[i]]<<endl;
+					if (verbose) cout<<"Local func i:"<< i << "  refLfInds[i]:"<<refLfInds[i]<<"   "<< lfs[refLfInds[i]]->getName();
+
+
+					//this->refLfValues[i] = this->lfs[refLfInds[i]]->getValue(mol,scope);
+					this->refLfValues[i] = this->lfs[refLfInds[i]]->evaluateOnTestMol(mol,scope, verbose);
+					if (verbose) cout<<"  answer: "<<this->refLfValues[i]<<endl;
+				}
+				//for (n_refLfs)  set the value by calling the correct local function to evaluate on the specified scope
+				//which we reference through the given molList.
+				//this->refLfValues[i] = this->lfs[refLfInds[i]]->evaluateOn(molList[refLfScopes[i]],scope[refLfScopes[i]]);
+
+			}else {
+				if (mol==0) cout<<"Error evaluating composite function: "<<name<<", No molecule is specified."<<endl;
+				else cout<<"This function depends on local functions, but you gave no scope when calling this function.  Time to quit."<<endl;
+				exit(1);
+			}
+		}
+	}
+
+	//evaluate this function
+	double result = FuncFactory::Eval(p);
+	if (verbose) cout<<"Final result when evaluating a RHS function is: "<< result<<endl;
+	return result;
+}
+
+#endif

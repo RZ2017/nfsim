@@ -1,5 +1,6 @@
 #include <iostream>
 #include "NFcore.hh"
+#include "../NFutil/setting.hh" //Razi added for debugging purpose, last update 2017-3-29
 #include <queue>
 
 
@@ -56,6 +57,16 @@ Molecule::Molecule(MoleculeType * parentMoleculeType, int listId)
 	ID_unique = Molecule::uniqueIdCount++;
 	this->listId = listId;
 	isAliveInSim = false;
+
+
+#ifdef RHS_FUNC //Razi:  Added to support RHS functions
+	originalMptr = 0; //Razi: default is original molecule, not a cloned molecule for test
+	copyMptr = 0;   //Razi: no copy exists yet
+#endif
+
+	if((RAZI_DEBUG & CREATE_MOLECULE)&& (listId<=3))	{
+		std::cout<<"\tI just created a Molecule of Type:"<< this->parentMoleculeType->getName() <<" and a complex with ID:"<<ID_complex <<"  Type ID:" <<ID_type << "  Unique ID:" << ID_unique <<" List ID:" << listId<<" UsingComlexFlag:"<<useComplex<<"....\n";
+	}
 }
 
 // Molecule Deconstructor
@@ -655,5 +666,222 @@ void Molecule::printMoleculeList(list <Molecule *> &members)
 
 
 
+
+#ifdef RHS_FUNC //Razi:  Added to support RHS functions
+void Molecule::setUniqueID(int ID){
+	//this function sets unique ID, it should be used only for copy and temporary molecules, for regular molecules it is automatically set in constructor
+	if (ID < Molecule::uniqueIdCount){
+		cerr<<" Setting invalid(duplicate) molecule ID:" << ID << "< limit: "<< Molecule::uniqueIdCount; exit(0);
+	}
+	ID_unique = ID;
+}
+
+
+Molecule::Molecule(Molecule &obj){ //const Molecule &obj
+
+	localFunctionValues;
+
+	if (obj.copyMptr != 0){
+		cerr<<"This molecule is already cloned:"<< obj.copyMptr<<"...\n"; exit(0);
+	}
+
+	//useComplex = obj.useComplex;
+	useComplex=0; //razi: complex is not developed yet for the copy molecules
+	originalMptr =(Molecule *) &obj;   //Razi: lets point to the original pointer
+
+	//cout<<"cloning a test molecule: start";
+
+	hasVisitedMolecule=obj.hasVisitedMolecule;
+	hasEvaluatedMolecule=obj.hasEvaluatedMolecule;
+	static const int NOSTATE = -1;
+	static const int NOBOND = 0;
+	static const int NOINDEX = -1;
+
+	isPrepared=obj.isPrepared;
+	isAliveInSim = obj.isAliveInSim;
+	ID_type = obj.ID_type;
+
+	//ID_complex=this->parentMoleculeType->createComplex(this); no need to add to the allcomplexes array
+	//ID_complex=-1;
+	ID_complex = obj.ID_complex;
+//cout<<"Molecule::uniqueIdCount before copying:"<<Molecule::uniqueIdCount<<endl;
+
+	//ID_unique = Molecule::uniqueIdCount++; //Razi: we do not need to increase uniqueIdCount for test molecule created here
+
+	//cout<<"Molecule::uniqueIdCount after copying:"<<Molecule::uniqueIdCount<<endl; mypause(-1);
+
+
+	parentMoleculeType = obj.parentMoleculeType;
+	population_count = obj.population_count;
+
+	numOfComponents=obj.numOfComponents;
+
+
+	this->component = new int [numOfComponents];
+	this->bond = new Molecule * [numOfComponents];
+	this->indexOfBond = new int [numOfComponents];
+	this->hasVisitedBond = new bool [numOfComponents];
+
+
+	for (int i=0; i<numOfComponents; i++){
+		component[i]=obj.component[i];   //later check
+		bond[i]=0; //obj.bond[i];  //bond to the new relevant test molecule
+		indexOfBond[i]=NOBOND;
+		hasVisitedBond[i] = false;
+	}
+
+	isMatchedTo=0; //obj.isMatchedTo; //razi: this causes error when killing the test object
+	rxnListMappingId2 = 0; //obj.rxnListMappingId2;  //razi: this causes error when killing the test object
+	nReactions = obj.nReactions;
+	isPrepared = obj.isPrepared;
+	isObservable = 0; //obj.isObservable; //razi: this causes error when killing the test object
+	localFunctionValues=new double[parentMoleculeType->getNumOfTypeIFunctions()];
+	//localFunctionValues=0;
+	//localFunctionValues=obj.localFunctionValues; //razi: this causes error when killing the test object
+
+	//isDead = obj.isDead;
+
+	//register this molecule with moleculeType and get some ID values
+
+	listId = obj.listId;
+	isAliveInSim = obj.isAliveInSim;
+
+	//cout<<": end.\n"; mypause(-1);
+}
+
+
+
+
+//This function is developed to copy a molecule and its connected subnetwork
+void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool verbose)
+//void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, vector <Molecule *> &origMs, vector <Molecule *> &copyMs, int maxDepth, int start_id)
+{
+	if(origM==0) {
+		cerr<<"Error in Molecule::CopybreadthFirstSearch, m is null.\n";	std::exit(3);
+	}
+	int currentDepth = 0;
+
+
+//cout<<"AAA-traversing on start"<<endl;mypause(-1);
+	//m->printDetails();
+
+	//First add this molecule
+	q.push(origM);
+	origMs.push_back(origM);
+
+	//make a fresh copy or get an existing copy
+	Molecule * copyM1;
+	if (origM->getCopy()){
+		copyM1 = origM->getCopy();
+if (verbose) cout<<"AAA-get previous copy for original molecule.\n";
+	}else{
+		copyM1 = new Molecule(*origM);  //Razi: check
+		copyM1->setUniqueID(start_id++);
+		origM->setCopy(copyM1);  //Razi: let the source molecule remember its copies
+if (verbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<<copyM1->getUniqueID()<<endl; //mypause(-1);
+	}
+	copyM=copyM1;
+
+	origM->setCopy(copyM);   //Razi: let the source molecule remember its copies
+	copyMs.push_back(copyM);
+
+	//copyM=copyM1;
+	d.push(currentDepth+1);
+	origM->hasVisitedMolecule=true;
+
+
+//cout<<"AAA-before while"; mypause(-1);
+	Molecule * neighbor_copy;
+	//Look at children until the queue is empty
+	while(!q.empty())
+	{
+
+//cout<<"AAA-start while"; mypause(-1);
+
+		//Get the next parent to look at (currentMolecule)
+		Molecule *cM = q.front();
+		Molecule * cM_copy = cM->getCopy();
+		if (!cM_copy){
+			cerr<<"Molecule::CopybreadthFirstSearch: No copy for a molecule alreaidy in the queue. I am quitting..."; exit(0);
+		}
+
+		currentDepth = d.front();
+		q.pop();
+		d.pop();
+
+		//Make sure the depth does not exceed the limit we want to search
+		if((maxDepth!=ReactionClass::NO_LIMIT) && (currentDepth>=maxDepth)) continue;
+
+		//Loop through the bonds
+		int cMax = cM->numOfComponents; int cIndex1,cIndex2;
+		for(int c=0; c<cMax; c++)
+		{
+//cout<<"AAA-start while-for"; mypause(-1);
+
+			//cM->getComp
+			if(cM->isBindingSiteBonded(c))
+			{
+				Molecule *neighbor = cM->getBondedMolecule(c);
+				//cout<<"looking at neighbor: "<<endl;
+				//neighbor->printDetails();
+				if(!neighbor->hasVisitedMolecule)
+				{
+					neighbor->hasVisitedMolecule=true;
+
+					//make a fresh copy or get the pointer to the existing copy
+					origMs.push_back(neighbor);
+					if (neighbor->getCopy()){
+						neighbor_copy = neighbor->getCopy();
+//if (verbose) cout<<"BBB-get previous copy for a neighbor molecule.\n";
+					}else{
+						neighbor_copy = new Molecule(*neighbor);  //Razi: check
+						neighbor_copy->setUniqueID(start_id++);
+						neighbor->setCopy(neighbor_copy);   //Razi: let the source molecule remember its copies
+//if (verbose) {cout<<"BBB-get a fresh copy for a neighbor molecule. ID:"<<start_id-1<<"="<<neighbor_copy->getUniqueID()<<endl; mypause(-1);}
+					}
+//cout<<"BBB-m id after copy: "<< m->getUniqueID()<<"  " <<endl; mypause(-1);
+
+
+					cIndex1 = c;
+					cIndex2 = cM->getBondedMoleculeBindingSiteIndex(cIndex1);
+//if (verbose) {cout<<"Binding copy molecule when traversing m1 uID:" << cM_copy->getUniqueID() <<" index1:"<<c<<"  m2 uID:" << neighbor_copy->getUniqueID() <<"  index2:"<< cIndex2 <<endl; mypause(-1);}
+					cM->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
+//if (verbose) {cout<<"Binding copy molecule finished successfully."<<endl; mypause(-1);}
+					copyMs.push_back(neighbor_copy);
+
+
+					q.push(neighbor);
+					d.push(currentDepth+1);
+					//cout<<"adding... to traversal list."<<endl;
+				}
+			}
+		}
+	}
+//cout<<"AAA-start while end"; mypause(-1);
+
+
+	//clear the has visitedMolecule values
+	for( molIter = origMs.begin(); molIter != origMs.end(); molIter++ )
+  		(*molIter)->hasVisitedMolecule=false;
+
+//cout<<"AAA-middle"; mypause(-1);
+//cout<<"copyMs.size():"<<copyMs.size()<<endl; mypause(-1);
+
+	for( molIter = copyMs.begin(); molIter != copyMs.end(); molIter++ ){
+		if (*molIter){
+			try{
+//			cout<<"good pointer 1: "; mypause(-1);
+			(*molIter)->hasVisitedMolecule=false;
+//			cout<<"good pointer 2"; mypause(-1);
+			}catch (string err){
+				cout<<"Error:"<<err;
+			}
+		}
+	}
+//cout<<"XXX-traversing on end"<<endl;mypause(-1);
+
+}
+
+#endif
 
 

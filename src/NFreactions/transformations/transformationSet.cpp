@@ -1,6 +1,6 @@
 
 #include "transformationSet.hh"
-
+#include "../../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 using namespace NFcore;
 
 
@@ -20,6 +20,12 @@ TransformationSet::TransformationSet(vector <TemplateMolecule *> reactantTemplat
 	this->n_reactants = reactantTemplates.size();
 	this->n_addmol  = 0;
 
+#ifdef RHS_FUNC  //razi added to support RHS functions
+	this->n_productTemplates = 0;
+	this->includeRHSFunc=false;
+	this->RHSreactantIndex=-1;
+#endif
+
 	this->reactants = new TemplateMolecule *[n_reactants];
 	for(unsigned int r=0; r<n_reactants; r++)
 		this->reactants[r] = reactantTemplates.at(r);
@@ -37,9 +43,80 @@ TransformationSet::TransformationSet(vector <TemplateMolecule *> reactantTemplat
 	this->check_collisions = false;
 
 	//Set up our transformation vectors
+
+
+	if(RAZI_DEBUG & RUN_REACTIONS){
+		if (n_reactants>1){
+			cout<<"\tTransformationSet object created for Templates["<<n_reactants<<"]="<<reactantTemplates[0]->getPatternString()<< ", "<<reactantTemplates[1]->getPatternString(); cin.get();
+		}
+		else{
+			if (n_reactants==1){
+				cout<<"\tTransformationSet object created for Template["<<n_reactants<<"]="<<reactantTemplates[0]->getPatternString(); cin.get();
+			}
+		}
+		//string TM=" ";		for (i=0; i<n_reactants; i++) {TM= std::strcat(TM, reactantTemplates[i]->getMoleculeTypeName()); TM=strcat(TM, ", ");}
+	}
+
 	this->transformations = new vector <Transformation *> [n_reactants];
 	finalized = false;
 }
+
+#ifdef RHS_FUNC  //razi added to support RHS functions
+TransformationSet::TransformationSet(vector <TemplateMolecule *> reactantTemplates,
+        vector <TemplateMolecule *> addMoleculeTemplates,
+        vector <TemplateMolecule *> OutputTemplates)
+{
+
+	this->hasSymUnbinding = false;
+	this->hasSymBinding   = false;
+
+	//cout<<"creating transformationSet..."<<endl;
+	//Remember our reactants
+	this->n_reactants = reactantTemplates.size();
+	this->reactants = new TemplateMolecule *[n_reactants];
+	for(unsigned int r=0; r<n_reactants; r++)
+		this->reactants[r] = reactantTemplates.at(r);
+
+	this->includeRHSFunc=false; //by default, functions are LHS
+
+	//Razi: Lets add output product Templates
+	this->n_productTemplates = OutputTemplates.size();
+	this->productTemplates = new TemplateMolecule *[n_productTemplates];
+	for(unsigned int r=0; r<n_productTemplates; r++)
+		this->productTemplates[r] = OutputTemplates.at(r);
+
+	if (addMoleculeTemplates.size()>0){		//Remember our add molecules
+		this->n_addmol = addMoleculeTemplates.size();
+		this->addmol = new TemplateMolecule *[n_addmol];
+		for(unsigned int r=0; r<n_addmol; r++)
+			this->addmol[r] = addMoleculeTemplates.at(r);
+
+		//Set up our transformation vectors
+		this->transformations = new vector <Transformation *> [ this->getNmappingSets() ];
+		cout<<"\t"<<n_addmol<< "\tNew molecules are added, when creating transformation set [new format].\n";
+	}
+	else{
+		this->n_addmol  = 0;
+		this->addmol = new TemplateMolecule *[n_addmol];
+		this->transformations = new vector <Transformation *> [n_reactants];
+
+		//cout<<"\tNo new molecule is added, when creating transformation set [new format].\n";
+	}
+	// complex bookkeeping is off by default
+	this->complex_bookkeeping = false;
+
+	// for now, symmetry factor is off by default
+	this->useSymmetryFactor = false;
+	this->symmetryFactor = 1.0;
+
+	// check collisions is off by default
+	this->check_collisions = false;
+
+
+	finalized = false;
+
+}
+#endif
 
 
 TransformationSet::TransformationSet(vector <TemplateMolecule *> reactantTemplates,
@@ -112,7 +189,77 @@ TransformationSet::~TransformationSet()
 	this->n_addmol = 0;
 }
 
+#ifdef RHS_FUNC //razi added
+void TransformationSet::printDetails(){
+	cout<<"\n--------------------------------------------------------------------------\n";
+	cout<<"\tPrinting details of transformation set...."<<endl;
+	cout<<"--------------------------------------------------------------------------\n";
+	if(includeRHSFunc) cout<<"\tRHS func exists.\n"; else   cout<<"\tRHS func does not exist.\n";
 
+	cout<<"\tReactants: ";
+	for (int i=0; i< n_reactants; i++) cout<<reactants[i]->getPatternString()<<",  ";  cout<<endl;
+
+	cout<<"\tProducts: ";
+	for (int i=0; i< n_productTemplates; i++) cout<<productTemplates[i]->getPatternString()<<",  ";  cout<<endl;
+	cout<<"--------------------------------------------------------------------------\n";
+}
+
+TemplateMolecule * TransformationSet::getTemplateMolecule(unsigned int reactantIndex)
+{
+	return getTemplateMolecule(reactantIndex, false);
+}
+
+TemplateMolecule * TransformationSet::getTemplateMolecule(unsigned int reactantIndex, bool RHSfunc) const
+{
+	if ((reactantIndex < n_reactants ) && (!RHSfunc))
+	{
+		return reactants[reactantIndex];
+	}
+	if ( reactantIndex < getNmappingSets() && (!RHSfunc))
+	{
+		return addmol[reactantIndex-n_reactants];
+	}
+	if ((reactantIndex < n_productTemplates ) && (RHSfunc))
+	{
+		return productTemplates[reactantIndex];
+	}
+	cerr<<"requesting invalid molecule template from a transformationSet object.\n";
+	return NULL;
+}
+
+
+
+//Razi added: return the number of transformations associated with input and output templates to support RHS functions
+int TransformationSet:: getNumOfTransformations(int reactantIndex){
+	return getNumOfTransformations(reactantIndex, false);
+}
+
+
+
+//Razi added: return the number of transformations associated with input and output templates to support RHS functions
+int TransformationSet:: getNumOfTransformations(int reactantIndex, bool RHSfunc) const{
+//	if (RHSfunc)
+//		return product_transformations[reactantIndex].size();
+//	else
+		return transformations[reactantIndex].size();
+};
+
+
+
+Transformation * TransformationSet::getTransformation(int reactantIndex, int index) {
+	return getTransformation(reactantIndex, index, false);
+}
+
+//Razi added: return transformations associated with input and output templates to support RHS functions
+Transformation * TransformationSet::getTransformation(int reactantIndex, int index, bool RHSfunc) const{
+//	if (RHSfunc)
+//	return product_transformations[reactantIndex].at(index);
+//	else
+		return transformations[reactantIndex].at(index);
+};
+
+
+#else
 TemplateMolecule *
 TransformationSet::getTemplateMolecule( unsigned int reactantIndex ) const
 {
@@ -125,7 +272,7 @@ TransformationSet::getTemplateMolecule( unsigned int reactantIndex ) const
 		return addmol[reactantIndex-n_reactants];
 	}
 }
-
+#endif
 
 
 bool TransformationSet::addStateChangeTransform(TemplateMolecule *t, string cName, int finalStateValue)
@@ -149,14 +296,89 @@ bool TransformationSet::addStateChangeTransform(TemplateMolecule *t, string cNam
 	// 3) Add the transformation object to the TransformationSet
 	transformations[reactantIndex].push_back(transformation);
 
+
+	if (RAZI_DEBUG & RUN_REACTIONS){
+		cout<<"\tStateChange Transformation for ReactId:"<< reactantIndex<<"  TM:"<< t->getPatternString()<<",  Comp:" << cName <<", Val:" <<finalStateValue << ", Total Trans for This Reactant:"<<transformations[reactantIndex].size();
+		cin.get();
+	}
+
 	// 3) Create a MapGenerator object and add it to the templateMolecule
 	MapGenerator *mg = new MapGenerator(transformations[reactantIndex].size()-1);
 	t->addMapGenerator(mg);
 	return true;
 }
 
+#ifdef RHS_FUNC //Razi: added to support RHS functions
 bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string PointerName, int scope)
 {
+	return addLocalFunctionReference(t, PointerName, scope, false); //Razi: Default is LHS function
+}
+
+bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string PointerName, int scope, bool RHSfunc)
+{
+
+	//Razi: scope here means either LocalFunction::SPECIES or LocalFunction::MOLECULE (not local or global)
+	if(finalized) { cerr<<"TransformationSet cannot add another transformation once it has been finalized!"<<endl; exit(1); }
+
+	//Razi: For functions, where the argument is one of the output product templates, ...
+	// Find the reactant whose first molecule matches the first molecule of the corresponding product
+	//For isntance: X.Y + Z  -> u:X + Y + Z       [the reactant X.Y is relevant]
+	//ReactantIndex includes the relevant reactant index [see find()]
+	int ReactantIndex = find(t, RHSfunc);
+
+	if(ReactantIndex==-1) {
+		cerr<<"Couldn't find the Output template you gave me!  In transformation set - addStateChangeTransform!\n";
+		cerr<<"This might be caused if you declare that two molecules are connected, but you\n";
+		cerr<<"don't provide how they are connected.  For instance: if you have declared \n";
+		cerr<<" A(b).B(a),( instead of, say, A(b!1).B(a!1) ) you will get this error."<<endl;
+		return false;
+	}
+
+	if (RHSfunc){
+		if (RAZI_DEBUG & SHOW_SIM) {
+			cout<<"\n\tRHS Reaction: found Local Func for ReactId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope<<endl ;}
+
+		this->RHSreactantIndex=ReactantIndex; //Razi: contains the reactant index with RHS function
+		includeRHSFunc=true;
+		return true;
+/*
+		cout <<"transformationSet: I don't know how to add local function reference for RHS functions.\n"; mypause(-1);
+		//Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
+		//transformations[reactantIndex].push_back(transformation);
+		Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
+		product_transformations[ReactantIndex].push_back(transformation);
+
+		if (RAZI_DEBUG  & RUN_REACTIONS){
+			cout<<"\n\tAdd RHS Local Func for ProductId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This product :"<<product_transformations[ReactantIndex].size();
+			cin.get();
+		}
+
+
+		MapGenerator *mg = new MapGenerator(product_transformations[ReactantIndex].size()-1);
+		t->addMapGenerator(mg, 1);
+		return true;
+*/
+
+	}else{
+		if(includeRHSFunc) cerr<<"The function type is LHS, but RHS flag is already set. Perhaps two functions are included for a reaction which is not allowed.\n"; mypause(10000);
+		includeRHSFunc=false; //make sure it is set to false
+		Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
+		transformations[ReactantIndex].push_back(transformation);
+
+		if (RAZI_DEBUG  & (CREATE_FUNC | RUN_REACTIONS)){
+			cout<<"\n\tAdd Local Func for ReactId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This Reactant:"<<transformations[ReactantIndex].size();
+		}
+
+
+		MapGenerator *mg = new MapGenerator(transformations[ReactantIndex].size()-1);
+		t->addMapGenerator(mg);
+		return true;
+	}
+}
+#else
+bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string PointerName, int scope)
+{
+	//Razi: scope here means either LocalFunction::SPECIES or LocalFunction::MOLECULE (not local or global)
 	if(finalized) { cerr<<"TransformationSet cannot add another transformation once it has been finalized!"<<endl; exit(1); }
 	int reactantIndex = find(t);
 	if(reactantIndex==-1) {
@@ -169,11 +391,18 @@ bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string Po
 
 	Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
 	transformations[reactantIndex].push_back(transformation);
+
+	if (RAZI_DEBUG  & RUN_REACTIONS){
+		cout<<"\n\tAdd Local Func for ReactId:"<< reactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This Reactant:"<<transformations[reactantIndex].size();
+		cin.get();
+	}
+
+
 	MapGenerator *mg = new MapGenerator(transformations[reactantIndex].size()-1);
 	t->addMapGenerator(mg);
 	return true;
 }
-
+#endif
 
 bool TransformationSet::addIncrementStateTransform(TemplateMolecule *t, string cName)
 {
@@ -271,6 +500,12 @@ bool TransformationSet::addBindingTransform(TemplateMolecule *t1, string bSiteNa
 		transformation1 = TransformationFactory::genBindingTransform1(cIndex1, reactantIndex2, transformations[reactantIndex2].size());
 
 	Transformation *transformation2 = TransformationFactory::genBindingTransform2(cIndex2);
+
+
+	if (RAZI_DEBUG & RUN_REACTIONS){
+		cout<<"\n\tAdd Binding Transform for ReactIds:"<< reactantIndex1 <<", "<<reactantIndex2<<"  TMs:"<< t1->getPatternString()<<", "<< t2->getPatternString()<<",  Sites:" << bSiteName1<<", "<<bSiteName2 <<", SiteIndexes: "<<cIndex1 <<", "<< cIndex2<< ", Total Trans for These Reactant:"<<1+transformations[reactantIndex1].size()<<", "<<1+transformations[reactantIndex2].size();
+		cin.get();
+	}
 
 	transformations[reactantIndex1].push_back(transformation1);
 	MapGenerator *mg1 = new MapGenerator(transformations[reactantIndex1].size()-1);
@@ -430,6 +665,11 @@ bool TransformationSet::addUnbindingTransform(TemplateMolecule *t, string bSiteN
 	// 3) Add the transformation object to the TransformationSet
 	transformations[reactantIndex].push_back(transformation);
 
+	if (RAZI_DEBUG & RUN_REACTIONS){
+		cout<<"\n\tAdd UnBinding Transform for ReactId:"<< reactantIndex <<",  TM:"<<tToTransform->getPatternString()<< ",  out of TMs:"<< t->getPatternString()<<", "<< t2->getPatternString()<<",  Sites:" << bSiteName<<", "<<bSiteName2 <<", Selected SiteIndex: "<<cIndex <<", Total Trans for Thess Reactant:"<<transformations[reactantIndex].size();
+		cin.get();
+	}
+
 	// 3) Create a MapGenerator object and add it to the templateMolecule
 	MapGenerator *mg = new MapGenerator(transformations[reactantIndex].size()-1);
 	tToTransform->addMapGenerator(mg);
@@ -528,7 +768,98 @@ bool TransformationSet::addAddMolecule( MoleculeCreator *mc )
 
 
 
+#ifdef RHS_FUNC  //Razi added to support RHS functions
+int TransformationSet::find(TemplateMolecule *t){
+	return find(t, 0);
+}
+int TransformationSet::find(TemplateMolecule *t, bool RHSfunc)
+{
+//cout<<"TransformationSet::find called for "<< t->getPatternString()<< "flag: "<<RHSfunc<<endl;
 
+	if(finalized) { cerr<<"TransformationSet cannot search for a templateMolecule once it has been finalized!"<<endl; exit(1); }
+	int findindex2 = -1; int findIndex = -1;
+
+	//Razi: first make sure that the output patterns exists (is valid)
+	if (RHSfunc){ //the component belongs to the product templates
+		for(unsigned int r=0; r<n_productTemplates; r++)  {
+			//cout<<"product:  "<<this->productTemplates[r]->getPatternString() <<endl;
+			if(this->productTemplates[r]->contains(t)) {
+				if(findindex2==-1) {
+					findindex2 = r;
+				}
+				else {
+					cerr<<"Found duplicate output template molecule in two reaction lists!!  (in transformationSet)."<<endl;
+					exit(1);
+				}
+			}
+		}
+
+		if (findindex2 != -1){
+			//Razi: Find the relevant reactant
+			//The assumption is the same order of molecules in the input and out of the reaction
+
+			int molid = this->productTemplates[findindex2]->getMoleculeType()->getTypeID(); //this is the molecule we are looking for
+			string moltext = this->productTemplates[findindex2]->getMoleculeType()->getName(); //this is the molecule we are looking for
+			//cout<<"TransformationSet::find looking to find relevant reactant for: "<<moltext<<endl;
+
+
+			//Razi: find the order of appearance in output products
+			int order2=1;
+			for(int i=0; (i<=this->n_productTemplates) && (i < findindex2) ; i++){
+				string pattern= this->productTemplates[i]->getPatternString();
+				int pos=0;
+				while ((pos = pattern.find(moltext, pos)) < pattern.length())
+				{
+					order2++;
+				    pos += moltext.length();
+				}
+			}
+
+			//Razi: scan the input reactants until finding the molecules [at the same order]
+			int cnt=0;
+			for(int i=0; (i<=this->n_reactants)  ; i++){
+				string pattern= this->reactants[i]->getPatternString();
+				int pos=0;
+				while ((pos = pattern.find(moltext, pos)) < pattern.length())
+				{
+					cnt++;
+				    pos += moltext.length();
+				    if (cnt==order2){ ///found the relevant reactant
+				    	if (RAZI_DEBUG & (CREATE_REACTION|SHOW_FIRE)) cout<<"transformationset:find successfully, molecule:"<<moltext <<" reatant["<<i <<"]:"<<pattern<<"   product["<< findindex2 <<"]:" << this->productTemplates[findindex2]->getPatternString() <<endl;
+				    	findIndex = i; return findIndex;
+				    }
+				}
+			}
+		}
+	}
+	else{  //the component belongs to the reactant templates
+		for(unsigned int r=0; r<n_reactants; r++)  {
+			if(this->reactants[r]->contains(t)) {
+				if(findIndex==-1) {
+					findIndex = r;
+				}
+				else {
+					cerr<<"Found duplicate template molecule in two reaction lists!!  (in transformationSet)."<<endl;
+					exit(1);
+				}
+			}
+		}
+		// also check add molecule templates
+		for(unsigned int r=0; r<n_addmol; r++)  {
+			if(this->addmol[r]->contains(t)) {
+				if(findIndex==-1) {
+					findIndex = r + n_reactants;
+				}
+				else {
+					cerr<<"Found duplicate template molecule in two reaction lists!!  (in transformationSet)."<<endl;
+					exit(1);
+				}
+			}
+		}
+	}
+	return findIndex;
+}
+#else
 int TransformationSet::find(TemplateMolecule *t)
 {
 	if(finalized) { cerr<<"TransformationSet cannot search for a templateMolecule once it has been finalized!"<<endl; exit(1); }
@@ -558,8 +889,119 @@ int TransformationSet::find(TemplateMolecule *t)
 	}
 	return findIndex;
 }
+#endif
 
 
+#ifdef RHS_FUNC //Razi added to support RHS functions
+bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool check_ring)
+{
+	bool result = true;
+	list <Molecule *> neighbours;
+
+
+	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
+
+	// addMolecule transforms are applied before other transforms so the molecules exist
+	//  for potential modification by other transforms.
+
+//cout<<"AAA1 ";mypause(-1);
+//cout<<"addMoleculeTransformations.size():"<<addMoleculeTransformations.size()<<"   addSpeciesTransformations.size():"<<addSpeciesTransformations.size()<<endl;
+
+
+	if(!testmode){
+		int size = addMoleculeTransformations.size();
+		if(size>0) {
+			for(int i=0; i<size; i++) {
+				addMoleculeTransformations.at(i)->apply_and_map( mappingSets[n_reactants+i]);
+			}
+		}
+
+		// apply addSpecies transforms, so we have all the molecules out there
+		size = addSpeciesTransformations.size();
+		if(size>0) {
+			for(int i=0; i<size; i++) {
+				addSpeciesTransformations.at(i)->apply(NULL,NULL);
+			}
+		}
+	}
+
+//cout<<"AAA2 nMappingSet:"<<getNmappingSets()<<"  ";mypause(-1);
+	// loop over reactants and added molecules, apply transforms to each
+	for(unsigned int r=0; r<getNmappingSets(); r++)
+	{
+		MappingSet *ms = mappingSets[r];
+		for ( unsigned int t=0;  t<transformations[r].size();  t++ )
+		{
+//cout<<"BBB2 r:"<<r<<"  t:"<<t<<"  ";mypause(-1);
+			if(transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
+			{	// handle deletions
+//cout<<"BBB2-1 r:"<<r<<"  t:"<<t<<"  "; mypause(-1);
+				if (!testmode) {
+					Molecule * mol = ms->get(t)->getMolecule();
+					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
+					{	// complex deletion: flag connected molecules for deletion
+						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
+					}
+					else
+					{	// molecule deletion: flag this molecule for deletion
+						deleteList.push_back( mol );
+					}
+				}
+			}
+			else
+			{	// handle other transforms
+				//if (RAZI_DEBUG & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
+
+
+				if (check_ring && (transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING) ){
+					//make sure that unbin breakes down the involving molecules into separate islands [there is no other connection]
+
+					Molecule * mol1 = ms->get(t)->getMolecule();
+					int index1 = ms->get(t)->getIndex();
+					Molecule * mol2 = mol1->getBondedMolecule(index1);
+					if ((!mol1)||(!mol2)){
+						cout<<"Transformation Error: Try to unbond two molecules that does not exist\n.";
+						result=false;
+					}
+					transformations[r].at(t)->apply(ms->get(t), mappingSets);
+
+					//razi: find connected molecules after applying the unbind transformation
+					mol1->traverseBondedNeighborhood(neighbours, ReactionClass::NO_LIMIT);
+					for (list <Molecule *>::iterator it= neighbours.begin(); it!=neighbours.end(); it++){
+						if ((*it)->getUniqueID() == mol2->getUniqueID()){
+							cout<<"Transformation Error: Try to unbond two molecules, but there is an alternative connection!!!\n.";
+							result=false;
+						}
+					}
+				}
+				else{
+					transformations[r].at(t)->apply(ms->get(t), mappingSets);
+				}
+
+			}
+		}
+	}
+
+
+	if (!testmode) {
+		//Each molecule that is on the delete list must be dealt with
+		Molecule * mol;
+		for( it = deleteList.begin(); it!=deleteList.end(); it++)
+		{
+			mol = *it;
+			mol->getMoleculeType()->removeMoleculeFromRunningSystem(mol);
+		}
+		deleteList.clear();
+	}
+
+	return result;
+}
+
+bool TransformationSet::transform(MappingSet **mappingSets){
+	return TransformationSet::transform(mappingSets, false, false);
+}
+
+#else
 bool TransformationSet::transform(MappingSet **mappingSets)
 {
 	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
@@ -625,6 +1067,12 @@ bool TransformationSet::transform(MappingSet **mappingSets)
 
 	return true;
 }
+
+#endif
+
+
+
+
 
 
 bool TransformationSet::checkMolecularity( MappingSet ** mappingSets )
@@ -793,8 +1241,12 @@ void TransformationSet::finalize()
 		if(transformations[r].size()==0) {
 			transformations[r].push_back(TransformationFactory::genEmptyTransform());
 			MapGenerator *mg = new MapGenerator(transformations[r].size()-1);
+#ifdef RHS_FUNC
+			getTemplateMolecule(r,false)->addMapGenerator(mg, false);   //Razi: check if similar process is needed for product reactants
+#else
 			getTemplateMolecule(r)->addMapGenerator(mg);
-		}
+#endif
+			}
 	}
 
 	// Determine if we need to do any reactant center overlap checks.
@@ -802,6 +1254,8 @@ void TransformationSet::finalize()
 	//   possibility of reactant center overlap: are there a common molecule types in
 	//   a pair of reactant templates. In the future, we could check a necessary and sufficent condition
 	//   (e.g. pattern overlap) to avoid extra work.
+
+	//Razi note: collision_pairs include mappings between reactants (non population types) that share common molecule types
 	if ( (n_reactants>1)  &&  !complex_bookkeeping )
 	{
 		vector <TemplateMolecule *> tmList1;

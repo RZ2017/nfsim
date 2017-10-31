@@ -2,6 +2,7 @@
 
 
 #include "reaction.hh"
+#include "../../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 
 #define DEBUG_MESSAGE 0
 
@@ -20,6 +21,8 @@ DORRxnClass::DORRxnClass(
 		vector <string> &lfArgumentPointerNameList, System *s) :
 	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
+	if ((RAZI_DEBUG) & CREATE_REACTION) {cout<<"\n\tDOR RXN:"<<name<<" with composite function:"<< function->getName() <<" is created.\n";  mypause(-1);}
+
 //	cout<<"ok, here we go..."<<endl;
 	vector <TemplateMolecule *> dorMolecules;
 
@@ -28,13 +31,32 @@ DORRxnClass::DORRxnClass(
 	//can be found because they have a LocalFunctionPointer Transformation that keeps
 	//information about the pointer onto either a reactant species or a particular molecule
 	//in the pattern.
+
+
+	//these blocks are just for debugging a certain problem. delete in the final version
+	bool show_flag=false;
+	if( (RAZI_DEBUG & CHECK_LBG) && (name.compare("Bug1")|| name.compare("NoBug1")) ) show_flag=true; //razi added for debugging
+	if (show_flag){// cls();
+		for(unsigned int r=0; r<n_reactants; r++)
+			try{cout<<"\n\n\nBBB1-DORreactantIndex:"<<r<<"   MolType:"<< reactantTemplates[r]->getMoleculeType()->getName()<<endl;}catch(...){cerr<<"Error in BBB1\n";}
+		s->printAllMoleculeTypes();
+		//cls();
+		cout<<"Checking DORRxnClass to find the LBF Bug !!!"; mypause(10000);
+		cout<<"n_reactants:"<<n_reactants<<endl;
+		for (unsigned int i=0; i< transformationSet->getNreactants(); i++)
+			cout<<"\n TS-> Reactant ID:"<<i<<"  Pattern:"<< transformationSet->getTemplateMolecule(i)->getPatternString()<<"  MolType:"<< transformationSet->getTemplateMolecule(i)->getMoleculeTypeName() <<endl<<endl;
+	}
+
+
 	this->DORreactantIndex = -1;
 	for(int r=0; (unsigned)r<n_reactants; r++) {
 		for(int i=0; i<transformationSet->getNumOfTransformations(r); i++) {
 			Transformation *transform = transformationSet->getTransformation(r,i);
-//			cout<<"found transformation of type: "<<transform->getType()<<" for reactant: "<<r<<endl;
+			//			cout<<"found transformation of type: "<<transform->getType()<<" for reactant: "<<r<<endl;
+			if (show_flag) cout<<"found transformation of type: "<<transform->getType()<<" for reactant index: "<<r<<endl;
 			if((unsigned)transform->getType()==TransformationFactory::LOCAL_FUNCTION_REFERENCE) {
 
+				if (show_flag) cout<<"Transformation type is LOCAL_FUNCTION_REFERENCE:"<<TransformationFactory::LOCAL_FUNCTION_REFERENCE<<endl;
 				if(DORreactantIndex==-1)
 				{
 					if ( transformationSet->getTemplateMolecule(r)->getMoleculeType()->isPopulationType() )
@@ -90,10 +112,14 @@ DORRxnClass::DORRxnClass(
 	argMappedMolecule = new Molecule *[n_argMolecules];
 	argScope = new int [n_argMolecules];
 
+	if (show_flag) cout<<"# of Molecules : "<<n_argMolecules <<endl;
+
 
 	for(int i=0; i<(int)lfArgumentPointerNameList.size(); i++) {
 //		cout<<"Received local function arg: "<< lfArgumentPointerNameList.at(i)<<endl;
 //		cout<<" Takes as argument this thang: "<< lfArgumentPointerNameList.at(i)<<endl;
+		if (show_flag)
+			cout<<i<<"/"<<n_argMolecules <<"-Received local function arg: "<< lfArgumentPointerNameList.at(i)<<" Takes as argument this thing: "<< lfArgumentPointerNameList.at(i)<<endl;
 
 		//Now search for the function argument...
 		bool match = false;
@@ -101,8 +127,13 @@ DORRxnClass::DORRxnClass(
 			Transformation *transform = transformationSet->getTransformation(DORreactantIndex,k);
 			if((unsigned)transform->getType()==TransformationFactory::LOCAL_FUNCTION_REFERENCE) {
 				LocalFunctionReference *lfr = static_cast<LocalFunctionReference*>(transform);
+				if (show_flag)
+					cout<<"Check for match Reactant Index:"<< DORreactantIndex<< "transformation index:"<<k<<" lfr->getPointerName():"<<lfr->getPointerName()<<"   lfArgumentPointerNameList.at(i):"<<lfArgumentPointerNameList.at(i)<<endl;
 				if(lfr->getPointerName()==lfArgumentPointerNameList.at(i)) {
-					//cout<<"Found a match here!"<<endl;
+					if (show_flag)
+						cout<<"Local Func match found here-> Reactant Index:"<< DORreactantIndex<< "transformation index:"<<k<<" lfr->getPointerName():"<<lfr->getPointerName()<<"   lfArgumentPointerNameList.at(i):"<<lfArgumentPointerNameList.at(i)<<endl;
+
+					//					cout<<"Found a match here!"<<endl;
 					//cout<<"found scope should be: "<<lfr->getFunctionScope()<<endl;
 					//If we got here, we found a match, so remember the index of the transformation
 					//so we can quickly get the value of the function for any mapping object we try
@@ -173,8 +204,21 @@ DORRxnClass::DORRxnClass(
 	//	cf->addTypeIMoleculeDependency(this->reactantTemplates[r]->getMoleculeType());
 	//}
 	// TODO: determine if it's sufficient to only add the DORreactantIndex
-	cf->addTypeIMoleculeDependency( reactantTemplates[DORreactantIndex]->getMoleculeType() );
+	if (show_flag){
+		cout<<"\nSelected DORreactantIndex:"<<DORreactantIndex<<"   MolType:"<< reactantTemplates[DORreactantIndex]->getMoleculeType()->getName()<<endl;
+		for(unsigned int r=0; r<n_reactants; r++)
+			cout<<"\nDORreactantIndex:"<<r<<"   MolType:"<< reactantTemplates[r]->getMoleculeType()->getName()<<endl;
+		for (unsigned int i=0; i< transformationSet->getNreactants(); i++)
+			cout<<"\n TS-> Reactant ID:"<<i<<"  Pattern:"<< transformationSet->getTemplateMolecule(i)->getPatternString()<<"  MolType:"<< transformationSet->getTemplateMolecule(i)->getMoleculeTypeName() <<endl<<endl;
+		cout<<"Before adding TYPE-1 for DORreaction, check all template molecules here:"<<endl; s->printAllMoleculeTypes();}
 
+	cf->addTypeIMoleculeDependency( reactantTemplates[DORreactantIndex]->getMoleculeType());
+
+	if (show_flag){
+			cout<<"After adding TYPE-1 for DORreaction, check all template molecules here:"<<endl; s->printAllMoleculeTypes();
+			for (unsigned int i=0; i< transformationSet->getNreactants(); i++)
+				cout<<"\n TS-> Reactant ID:"<<i<<"  Pattern:"<< transformationSet->getTemplateMolecule(i)->getPatternString()<<"  MolType:"<< transformationSet->getTemplateMolecule(i)->getMoleculeTypeName() <<endl<<endl;
+			cout<<"Checking DORRxnClass to find the LBF Bug is finished !!!"; mypause(10000);}
 }
 DORRxnClass::~DORRxnClass() {
 
@@ -690,6 +734,9 @@ DOR2RxnClass::DOR2RxnClass(
 		System *s
 	) : ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
+
+	if (RAZI_DEBUG & CREATE_REACTION) {cout<<"\n\tDOR2 RXN:"<<name<<" with composite functions:"<< function1->getName() << " and " << function2->getName()<< " is created.\n"; mypause(-1);}
+
 	// TODO: figure out if there are used for anything
 	//vector <TemplateMolecule *> dorMolecules1;
 	//vector <TemplateMolecule *> dorMolecules2;
@@ -1278,6 +1325,7 @@ void DOR2RxnClass::notifyRateFactorChange(Molecule * m, int reactantIndex, int r
 void DOR2RxnClass::printDetails() const
 {
 	cout<<"DOR2RxnClass: " << name <<"  ( baseRate="<<baseRate<<",  a="<<a<<", fired="<<fireCounter<<" times )"<<endl;
+	int n_printReactants = (n_reactants<=10? n_reactants: 5); //razi changed to show only a few
 	for(unsigned int r=0; r<n_reactants; r++)
 	{
 		if( r==(unsigned)DORreactantIndex1) {

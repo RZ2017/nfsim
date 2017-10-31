@@ -4,6 +4,7 @@
 
 
 #include "NFcore.hh"
+#include "../NFutil/setting.hh" //razi added for debugging purpose, last update 2017-3-29
 
 namespace NFcore
 {
@@ -86,6 +87,10 @@ namespace NFcore
 		/* functions that provide mapping capabilities */
 		void addMapGenerator(MapGenerator *mg);
 
+
+#ifdef RHS_FUNC //Razi: added to support RHS functions
+		void addMapGenerator(MapGenerator *mg, bool RHSfunc);
+#endif
 		/* functions that are needed to perform TemplateMolecule operations */
 		bool contains(TemplateMolecule *tempMol);
 
@@ -139,6 +144,11 @@ namespace NFcore
 		int n_mapGenerators;
 		MapGenerator **mapGenerators;
 
+#ifdef RHS_FUNC //Razi: added to support RHS functions
+		// Handling of transformations
+		int n_RHSmapGenerators;
+		MapGenerator **RHSmapGenerators;
+#endif
 
 		///////////////////////////////
 		////  There are two classes of things we have to match that must
