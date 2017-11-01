@@ -53,7 +53,7 @@ CompositeFunction::CompositeFunction(System *s,
 
 	p=0;
 
-	if (RAZI_DEBUG & CREATE_FUNC){
+	if (DEBUG_ACTIVE & CREATE_FUNC){
 		cout<<"\tCreating Composite Function for:\t"<<name<<" expression:" << expression<<endl;
 		cout<<"\t\tParams: \t";		for(unsigned int an = 0; an < this->n_params; an++) cout<<this->paramNames[an]<< ", "; cout<<endl;
 		cout<<"\t\tArguments: \t";		for(unsigned int an = 0; an < this->n_args; an++) cout<<this->argNames[an]<< ", "; cout<<endl;
@@ -174,7 +174,7 @@ void CompositeFunction::finalizeInitialization(System *s)
 		}
 	}
 
-	if (s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)){
+	if (s->getverbose() && (DEBUG_ACTIVE & CREATE_FUNC)){
 		cout<<"Finalizing Composite Functions. The parsed expression is: "<<parsedExpression<<endl;
 	}
 
@@ -201,7 +201,7 @@ void CompositeFunction::finalizeInitialization(System *s)
 						if(possibleArg==argNames[a]) {
 
 #ifdef RHS_FUNC
-							if (s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)) cout<<" Initializing a function possibleArg:" << possibleArg<< "   argNames[a]:"<< argNames[a]<<endl;
+							if (s->getverbose() && (DEBUG_ACTIVE & CREATE_FUNC)) cout<<" Initializing a function possibleArg:" << possibleArg<< "   argNames[a]:"<< argNames[a]<<endl;
 #endif
 							string identifier = "_"+argNames[a];
 							parsedExpression.replace(openPar,closePar-openPar+1,identifier);
@@ -339,7 +339,7 @@ void CompositeFunction::updateParameters(System *s)
 void CompositeFunction::prepareForSimulation(System *s)
 {
 	bool verbose = false;
-	if (RAZI_DEBUG & CREATE_FUNC) verbose = s->getverbose();
+	if (DEBUG_ACTIVE & CREATE_FUNC) verbose = s->getverbose();
 
 	try {
 		if (verbose){  cout<<"Preparing composite function for simulation. Func:"<< this->name<<endl; mypause(-1);}
@@ -439,7 +439,7 @@ void CompositeFunction::printDetails(System *s) {
 #endif
 
 
-	if (!(RAZI_DEBUG & (CREATE_FUNC | SHOW_FIRE))) return;
+	if (!(DEBUG_ACTIVE & (CREATE_FUNC | SHOW_FIRE))) return;
 
 	if(n_lfs>0) {
 		for(int i=0; i<n_refLfs; i++) {
@@ -484,7 +484,7 @@ double CompositeFunction::evaluateOn(Molecule **molList, int *scope, int *curRea
 bool verbose=false;
 #ifdef RHS_FUNC //Razi added to support RHS function
 	if (RHS){ cerr<<" Error,  calling wrong function evaluateOn for RHS function..."<<endl; return -1;}  //irrelevant for RHS function
-	//if (RHS && (RAZI_DEBUG & SHOW_FIRE)) verbose=true;
+	//if (RHS && (DEBUG_ACTIVE & SHOW_FIRE)) verbose=true;
 #endif
 	if (verbose) cout << "CompositeFunction::evaluateOn() for "<<name<<endl;
 
@@ -595,7 +595,7 @@ double CompositeFunction::evaluateOnProduct(Molecule *mol, int scope, int evalua
 			{
 				if (verbose) cout << "n_refLfs=" << n_refLfs << endl;
 				for(int i=0; i<n_refLfs; i++) {
-					//if ((RAZI_DEBUG) & SHOW_FIRE) cout<<"--- evaluating: "<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<scope[refLfScopes[i]]<<endl;
+					//if ((DEBUG_ACTIVE) & SHOW_FIRE) cout<<"--- evaluating: "<<lfs[refLfInds[i]]->getNiceName()<<" with scope: "<<scope[refLfScopes[i]]<<endl;
 					if (verbose) cout<<"Local func i:"<< i << "  refLfInds[i]:"<<refLfInds[i]<<"   "<< lfs[refLfInds[i]]->getName();
 
 

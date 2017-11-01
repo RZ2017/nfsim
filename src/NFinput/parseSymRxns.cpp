@@ -28,9 +28,9 @@ bool NFinput::FindReactionRuleSymmetry(
 		} else {
 			rxnName = pRxnRule->Attribute("id");
 		}
-		if (RAZI_DEBUG & CREATE_REACTION) {cout<<"\n*****************************************************************************\n";}// mypause(WTIME);}
-		if(verbose | (RAZI_DEBUG & CREATE_REACTION)) cout<<"\n*****\t\tReading Reaction Rule: "<<rxnName<<" to find symmetries... \t*****\n";
-		if (RAZI_DEBUG & CREATE_REACTION) {cout<<"\n*****************************************************************************\n";}// mypause(WTIME);}
+		if (DEBUG_ACTIVE & CREATE_REACTION) {cout<<"\n*****************************************************************************\n";}// mypause(WTIME);}
+		if(verbose | (DEBUG_ACTIVE & CREATE_REACTION)) cout<<"\n*****\t\tReading Reaction Rule: "<<rxnName<<" to find symmetries... \t*****\n";
+		if (DEBUG_ACTIVE & CREATE_REACTION) {cout<<"\n*****************************************************************************\n";}// mypause(WTIME);}
 
 
 		//Look at the list of patterns
@@ -60,7 +60,7 @@ bool NFinput::FindReactionRuleSymmetry(
 				return false;
 			}
 
-			if (RAZI_DEBUG & CREATE_REACTION){
+			if (DEBUG_ACTIVE & CREATE_REACTION){
 				cout<<"\tReaction: "<<rxnName <<"   Reactant:" << reactantName << endl;
 				map <string, component>::iterator CompIter;
 
@@ -175,7 +175,7 @@ bool NFinput::FindReactionRuleSymmetry(
 					symComps.erase(site);
 				}
 
-				if (RAZI_DEBUG & CREATE_REACTION){
+				if (DEBUG_ACTIVE & CREATE_REACTION){
 					cout<<"\tState change found for site: "<<site<<" for component:" << "("<<c.name<<"," <<c.symPermutationName  <<"): Therefore it is moved from symComps to symRxnCenter !!!\n";
 				}
 
@@ -216,7 +216,7 @@ bool NFinput::FindReactionRuleSymmetry(
 			// --Justin
 			if(comps.find(site1)!=comps.end() )
 			{
-				if (RAZI_DEBUG & CREATE_REACTION){
+				if (DEBUG_ACTIVE & CREATE_REACTION){
 					cout<<"\tAdd bond found for sites: "<<site1<<","<<site2<<" belonging to the components:" << comps.find(site1)->second.name << ", "<<comps.find(site2)->second.name <<endl;
 				}
 				component c1 = comps.find(site1)->second;
@@ -226,7 +226,7 @@ bool NFinput::FindReactionRuleSymmetry(
 				{
 					symRxnCenter.insert(pair <string, component> (site1,c1));
 					symComps.erase(site1);
-					if (RAZI_DEBUG & CREATE_REACTION){
+					if (DEBUG_ACTIVE & CREATE_REACTION){
 						cout<<"\tSite 1: "<<site1<<" is symmetric: Therefore its component is moved from symComps to symRxnCenter\n";
 					}
 				}
@@ -260,7 +260,7 @@ bool NFinput::FindReactionRuleSymmetry(
 				{
 					symRxnCenter.insert(pair <string, component> (site2,c2));
 					symComps.erase(site2);
-					if (RAZI_DEBUG & CREATE_REACTION){
+					if (DEBUG_ACTIVE & CREATE_REACTION){
 						cout<<"\tSite 2: "<<site2<<" is symmetric: Therefore its component is moved from symComps to symRxnCenter\n";
 					}
 				}
@@ -312,21 +312,21 @@ bool NFinput::FindReactionRuleSymmetry(
 				MoleculeType *mt1 = c1.mt;
 				MoleculeType *mt2 = c2.mt;
 
-				if (RAZI_DEBUG & CREATE_REACTION){
+				if (DEBUG_ACTIVE & CREATE_REACTION){
 					cout<<"\tDelete bond found for sites: "<<site1<<","<<site2<<" belonging to the components:" << comps.find(site1)->second.name << ", "<<comps.find(site2)->second.name <<endl;
 				}
 
 				if(mt1->isEquivalentComponent(c1.name)) {
 					symRxnCenter.insert(pair <string, component> (site1,c1));
 					symComps.erase(site1);
-					if (RAZI_DEBUG & CREATE_REACTION){
+					if (DEBUG_ACTIVE & CREATE_REACTION){
 						cout<<"\tSite 1: "<<site1<<" is symmetric: Therefore its component is moved from symComps to symRxnCenter\n";
 					}
 				}
 				if(mt2->isEquivalentComponent(c2.name)) {
 					symRxnCenter.insert(pair <string, component> (site2,c2));
 					symComps.erase(site2);
-					if (RAZI_DEBUG & CREATE_REACTION){
+					if (DEBUG_ACTIVE & CREATE_REACTION){
 						cout<<"\tSite 2: "<<site2<<" is symmetric: Therefore its component is moved from symComps to symRxnCenter\n";
 					}
 				}
@@ -784,7 +784,7 @@ bool NFinput::generateRxnPermutations(vector<map<string,component> > &permutatio
 	if(symRxnCenter.size()==0) {
 		map <string,component> m;
 		permutations.push_back(m);
-		if (RAZI_DEBUG & (CREATE_OBS | CREATE_REACTION)) cout<<"\tNo Symmetric Reactions, Skipped .\n";
+		if (DEBUG_ACTIVE & (CREATE_OBS | CREATE_REACTION)) cout<<"\tNo Symmetric Reactions, Skipped .\n";
 		return true;
 	}
 
@@ -1011,9 +1011,9 @@ bool NFinput::readPatternForSymmetry(
 						symComps.insert(pair <string, component> (compId,c));
 				} //else {/*cout<<"no"<<endl;*/ }  //just a check for debugging
 
-				if ((RAZI_DEBUG & (CREATE_OBS | CREATE_REACTION)) && (moltype->isEquivalentComponent(compName))) {
+				if ((DEBUG_ACTIVE & (CREATE_OBS | CREATE_REACTION)) && (moltype->isEquivalentComponent(compName))) {
 					cout<<"\tAnalyzing Components, Found Symmetric Bound, Id:" <<compId<<" Name:"<<compName << " compBondCount:" << compBondCount<< " State:"<<compStateLabel<< endl;
-				}else if ((RAZI_DEBUG & (CREATE_OBS | CREATE_REACTION)) && (!moltype->isEquivalentComponent(compName))){
+				}else if ((DEBUG_ACTIVE & (CREATE_OBS | CREATE_REACTION)) && (!moltype->isEquivalentComponent(compName))){
 					cout<<"\tAnalyzing Components, Found Regular Bound, Id:" <<compId<<" Name:"<<compName << " compBondCount:" << compBondCount<< " State:"<<compStateLabel<< endl;
 				}
 

@@ -302,7 +302,7 @@ double LogClassSelector::getNextReactionClass(ReactionClass *&rc)
 		}
 	}
 
-	if	(RAZI_DEBUG & RUN_REACTIONS){
+	if	(DEBUG_ACTIVE & RUN_REACTIONS){
 		cout<<"       LogClassSelector::getNextReactionClass, RND:"<< randNum<< "  [index, class, A]:" ;
 		for(int r=0; r<n_activeLogClasses; r++) cout<<"["<< r<<", "<< activeLogClasses[r] << ", " << logClassPropensity[activeLogClasses[r]] <<"], ";
 		cout<<"  Atot:" << Atot  <<"  selected reaction class:"<< selectedClass <<endl;
@@ -323,7 +323,7 @@ double LogClassSelector::getNextReactionClass(ReactionClass *&rc)
 	 //we have our rule
 	 rc=logClassList[selectedClass][randRule];
 
-	if	(RAZI_DEBUG & RUN_REACTIONS){
+	if	(DEBUG_ACTIVE & RUN_REACTIONS){
 		cout<<"       LogClassSelector::getNextReactionClass, randRule:"<< randRule<<"  selected reaction:"<< rc->getName() <<endl;
 	}
 

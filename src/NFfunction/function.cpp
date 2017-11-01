@@ -83,7 +83,7 @@ void GlobalFunction::prepareForSimulation(System *s)
 		}
 		p->SetExpr(this->funcExpression);
 
-		if(s->getverbose() && (RAZI_DEBUG & CREATE_FUNC)){ cout<<"Preparing for simulation: Global func:"<<this->getName()<<"  Expression:"<<this->funcExpression; this->printDetails();}
+		if(s->getverbose() && (DEBUG_ACTIVE & CREATE_FUNC)){ cout<<"Preparing for simulation: Global func:"<<this->getName()<<"  Expression:"<<this->funcExpression; this->printDetails();}
 
 	}
 	catch (mu::Parser::exception_type &e)

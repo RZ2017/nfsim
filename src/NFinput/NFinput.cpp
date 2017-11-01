@@ -50,7 +50,7 @@ System * NFinput::initializeFromXML(
 		int &suggestedTraversalLimit,
 		bool evaluateComplexScopedLocalFunctions )
 {
-	if ((RAZI_DEBUG) & READ_FILE) cout<<"\n =========================================================================================\n\n";
+	if ((DEBUG_ACTIVE) & READ_FILE) cout<<"\n =========================================================================================\n\n";
 	if(!verbose) cout<<"reading xml file ("+filename+")  \n\t[";
 	if(verbose) cout<<"\tTrying to read xml model specification file: \t\n'"<<filename<<"'"<<endl;
 
@@ -105,7 +105,7 @@ System * NFinput::initializeFromXML(
 
 		//Now retrieve the parameters, so they are easy to look up in the future
 		//and save the parameters in a map we call parameter
-		if ((RAZI_DEBUG) & READ_FILE) cout<<"\n =========================================================================================\n\n";
+		if ((DEBUG_ACTIVE) & READ_FILE) cout<<"\n =========================================================================================\n\n";
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading parameter list..."<<endl;
 		map<string, double> parameter;
@@ -115,7 +115,7 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
-		if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
+		if ((DEBUG_ACTIVE) & READ_FILE) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of MoleculeTypes..."<<endl;
 		map<string,int> allowedStates;
@@ -125,9 +125,9 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
-		//if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ----------------------------------------A-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(-1);}
+		//if ((DEBUG_ACTIVE) & READ_FILE) {cout<<"\n ----------------------------------------A-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(-1);}
 
-		if ((RAZI_DEBUG) & READ_FILE){ cout<<"\n =========================================================================================\n\n";  mypause(-1);}
+		if ((DEBUG_ACTIVE) & READ_FILE){ cout<<"\n =========================================================================================\n\n";  mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of Species..."<<endl;
 		if(!initStartSpecies(pListOfSpecies, s, parameter, allowedStates, verbose))
@@ -138,7 +138,7 @@ System * NFinput::initializeFromXML(
 		}
 
 
-		if ((RAZI_DEBUG) & (READ_FILE|CREATE_OBS)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
+		if ((DEBUG_ACTIVE) & (READ_FILE|CREATE_OBS)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else cout<<"\n\tReading list of Observables..."<<endl;
 		if(!initObservables(pListOfObservables, s, parameter, allowedStates, verbose, suggestedTraversalLimit))
@@ -150,7 +150,7 @@ System * NFinput::initializeFromXML(
 
 
 
-		if ((RAZI_DEBUG) & (READ_FILE| CREATE_FUNC)){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
+		if ((DEBUG_ACTIVE) & (READ_FILE| CREATE_FUNC)){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		if(!verbose) cout<<"-";
 		else if(pListOfFunctions) cout<<"\n\tReading list of Functions..."<<endl;
 		if(pListOfFunctions)
@@ -161,9 +161,9 @@ System * NFinput::initializeFromXML(
 				return NULL;
 			}
 		}
-		//for debug if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); }
+		//for debug if ((DEBUG_ACTIVE) & READ_FILE) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); }
 
-		if ((RAZI_DEBUG) & (READ_FILE | CREATE_REACTION)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
+		if ((DEBUG_ACTIVE) & (READ_FILE | CREATE_REACTION)) {cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		//We have to read reactionRules AFTER observables because sometimes reactions
 		//might depend on some observable...
 		if(!verbose) cout<<"-";
@@ -175,8 +175,8 @@ System * NFinput::initializeFromXML(
 			if(s!=NULL) delete s;
 			return NULL;
 		}
-		//if ((RAZI_DEBUG) & READ_FILE) {cout<<"\n ---------------------------------------C------------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); exit(1);}
-		if ((RAZI_DEBUG) & READ_FILE){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
+		//if ((DEBUG_ACTIVE) & READ_FILE) {cout<<"\n ---------------------------------------C------------------------------------------------\n\n";s->printAllFunctions(); s->printAllMoleculeTypes(); mypause(0); exit(1);}
+		if ((DEBUG_ACTIVE) & READ_FILE){ cout<<"\n =========================================================================================\n\n"; mypause(-1);}
 		/////////////////////////////////////////
 		// Parse is finally over!  Now we just have to take care of some final details.
 
@@ -281,7 +281,7 @@ bool NFinput::initMoleculeTypes(
 		map<string,int> &allowedStates,
 		bool verbose)
 {
-	if(!((RAZI_DEBUG) & CREATE_MOLECULE)) {verbose=false;} //disable extra messages
+	if(!((DEBUG_ACTIVE) & CREATE_MOLECULE)) {verbose=false;} //disable extra messages
 	try {
 		vector <string> compLabels;
 		vector <string> defaultCompState;
@@ -1020,7 +1020,7 @@ bool NFinput::initReactionRules(
 {
 
 	bool show_flag = false; //razi added only for test, later delete
-	if(!((RAZI_DEBUG) & CREATE_REACTION)) {verbose=false;} //disable extra messages
+	if(!((DEBUG_ACTIVE) & CREATE_REACTION)) {verbose=false;} //disable extra messages
 
 	try {
 
@@ -1028,7 +1028,7 @@ bool NFinput::initReactionRules(
 		TiXmlElement *pRxnRule;
 		for ( pRxnRule = pListOfReactionRules->FirstChildElement("ReactionRule"); pRxnRule != 0; pRxnRule = pRxnRule->NextSiblingElement("ReactionRule"))
 		{
-			//if ((RAZI_DEBUG) & CREATE_REACTION) mypause(WTIME);//{mypause(-1); cls();}
+			//if ((DEBUG_ACTIVE) & CREATE_REACTION) mypause(WTIME);//{mypause(-1); cls();}
 			//First, scan the reaction rule for possible symmetries!!!
 			map <string, component> symComps;
 			map <string, component> symRxnCenter;
@@ -1050,7 +1050,7 @@ bool NFinput::initReactionRules(
 			generateRxnPermutations(permutations, symComps, symRxnCenter,verbose);
 
 
-			if ((RAZI_DEBUG) & CREATE_REACTION){
+			if ((DEBUG_ACTIVE) & CREATE_REACTION){
 				cout<<"\tPreprocessing Finished. # of symComps:"<< symComps.size() <<"# of symRxnCenter:"<< symRxnCenter.size() <<"# of permutations:"<< permutations.size() <<endl<<endl;
 			}
 
@@ -1077,7 +1077,7 @@ bool NFinput::initReactionRules(
 					}
 				}
 				if(verbose) cout<<"\tCreating Reaction Rule: "<<rxnName<<endl;
-				if (((RAZI_DEBUG) & CREATE_REACTION) || ((RAZI_DEBUG) & CHECK_LBG)){   //Razi: this paragraph is debugging for a specific bug, can be removed later
+				if (((DEBUG_ACTIVE) & CREATE_REACTION) || ((DEBUG_ACTIVE) & CHECK_LBG)){   //Razi: this paragraph is debugging for a specific bug, can be removed later
 					cout<<"\tAnalyzing Reaction:"<< rxnName <<" Permutation[" <<p+1<<"/"<< permutations.size()<<"] ==>";
 					if (symMap.empty()){ cout <<" No Symmetric Map  ";
 					}else {
@@ -1158,7 +1158,7 @@ bool NFinput::initReactionRules(
 				}
 
 				//Outputting all the templates for debugging purposes
-				if (((RAZI_DEBUG) & CHECK_LBG) && show_flag){
+				if (((DEBUG_ACTIVE) & CHECK_LBG) && show_flag){
 					cout<<"\tTemplates required for this reaction: \n";
 					for (map<string,TemplateMolecule *>::iterator it=reactants.begin() ; it != reactants.end(); it++ ){
 						cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -1196,7 +1196,7 @@ bool NFinput::initReactionRules(
 				vector <MoleculeCreator *> moleculeCreatorsList;
 
 				TiXmlElement *pAdd;
-				if ((RAZI_DEBUG) & CREATE_REACTION){ //Razi: only for debug
+				if ((DEBUG_ACTIVE) & CREATE_REACTION){ //Razi: only for debug
 					pAdd = pListOfOperations->FirstChildElement("Add");
 					if (!pAdd) cout<<"\tNo new molecule is added by this reaction, skipped required processing"<<endl;
 					else cout<<"\tAt least one molecule is added by this reaction, perform required processing"<<endl;
@@ -1354,7 +1354,7 @@ bool NFinput::initReactionRules(
 				//Razi: This part is added to keep track of output patterns in case there is a function applied to the RHS of an equation
 
 				//Go get the product patterns
-				if ((RAZI_DEBUG) & CREATE_REACTION) cout<<"\n\tAnalyzing reaction products\n";
+				if ((DEBUG_ACTIVE) & CREATE_REACTION) cout<<"\n\tAnalyzing reaction products\n";
 				TiXmlElement *pListOfProductPatterns = pRxnRule->FirstChildElement("ListOfProductPatterns");
 				if ( !pListOfProductPatterns )
 				{
@@ -1480,7 +1480,7 @@ bool NFinput::initReactionRules(
 					component *c;
 					int finalStateInt = 0;
 					if(!lookup(c, site, comps, symMap)) return false;
-					if((RAZI_DEBUG) & CREATE_REACTION) {
+					if((DEBUG_ACTIVE) & CREATE_REACTION) {
 						cout<<"\tState Change for site:"<<site<<"  component found by looking up the comps and symMap ID:"<<c->uniqueId<<"   CompPermutaion-name:"<<c->symPermutationName<<"  compName:"<<c->name<<endl;
 					}
 
@@ -2366,10 +2366,10 @@ bool NFinput::initReactionRules(
 					r->setTotalRateFlag(totalRateFlag);
 					comps.clear();
 				}
-				if (((RAZI_DEBUG) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
+				if (((DEBUG_ACTIVE) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------B-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
 
 			} //end loop through all permutations
-			if (((RAZI_DEBUG) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------C-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
+			if (((DEBUG_ACTIVE) & READ_FILE)&& (show_flag)) {cout<<"\n ----------------------------------------C-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(0); }
 
 		} //end loop through all reaction rules
 
@@ -2436,7 +2436,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 				return false;
 			}
 		}
-		if ((RAZI_DEBUG) & CREATE_OBS) cout<<"\tOBS: "<< observableName <<" =>Found Pattern :" <<patternName << " Relation:"<< relation<<"  Quantitiy:"<< quantity<< endl;
+		if ((DEBUG_ACTIVE) & CREATE_OBS) cout<<"\tOBS: "<< observableName <<" =>Found Pattern :" <<patternName << " Relation:"<< relation<<"  Quantitiy:"<< quantity<< endl;
 
 		//cout<<"   --- reading pattern "<<patternName<<" for symmetry"<<endl;
 		TiXmlElement *pListOfMols = pPattern->FirstChildElement("ListOfMolecules");
@@ -2467,7 +2467,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 					tmList.push_back(tm);
 
 
-					if ((RAZI_DEBUG) & CREATE_OBS){
+					if ((DEBUG_ACTIVE) & CREATE_OBS){
 						cout<<"\tOBS: "<< observableName <<" => Analyzing Permutation[" <<p+1<<"/"<< permutations.size()<<"] ==>";
 						if (symMap.empty()){ cout <<" No Symmetric Map";
 						}else {
@@ -2485,7 +2485,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 						return false;
 					}
 				}
-				if ((RAZI_DEBUG) & CREATE_OBS){
+				if ((DEBUG_ACTIVE) & CREATE_OBS){
 					cout<<"\tOBS: "<< observableName <<" =>Total Permutations:" <<permutations.size() << " Templates:";
 					for(int an=0; an<tmList.size(); an++) cout<<tmList[an]->getMoleculeTypeName()<<", "; cout<<"\b\b\n";
 				}
@@ -2506,7 +2506,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 
 
 
-				if ((RAZI_DEBUG) & CREATE_OBS){
+				if ((DEBUG_ACTIVE) & CREATE_OBS){
 					cout<<"\tOBS (SPECIES): "<< observableName <<"  Templates:"<<tm->getMoleculeTypeName()<<"   Relation:"<<relation << "   Quantity:" << quantity<<"\b\b\n";
 					if (tm->getN_connectedTo()>0){
 						cout<<" The template <<" << tm->getPatternString() << "is connected to " << tm->getN_connectedTo() << " other molecules"<<endl;
@@ -2529,7 +2529,7 @@ bool NFinput::readObservableForTemplateMolecules(TiXmlElement *pObs,
 		}
 	}
 
-	if ((RAZI_DEBUG) & CREATE_OBS) cout<<"\n======================================================================================\n\n";
+	if ((DEBUG_ACTIVE) & CREATE_OBS) cout<<"\n======================================================================================\n\n";
 
 	return true;
 }
@@ -2543,7 +2543,7 @@ bool NFinput::initObservables(
 		bool verbose,
 		int &suggestedTraversalLimit)
 {
-		if (!((RAZI_DEBUG) & CREATE_OBS)) verbose=false;
+		if (!((DEBUG_ACTIVE) & CREATE_OBS)) verbose=false;
 	try {
 		//We will parse this in a similar manner to parsing species, except to say that we don't create
 		//actual molecules, just template molecules.

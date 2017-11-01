@@ -21,7 +21,7 @@ MoleculeList::MoleculeList(MoleculeType *mt, int init_capacity, int finalCapacit
 		mArray[i]=new Molecule (mt,i);
 		molPos[i]=i;
 	}
-	if((RAZI_DEBUG) & CREATE_MOLECULE){cout<<"\tGenerate Molecule List for type:"<< mt->getName() <<" capacity: " << init_capacity <<" final capacity:" << finalCapacity <<std::endl;}
+	if((DEBUG_ACTIVE) & CREATE_MOLECULE){cout<<"\tGenerate Molecule List for type:"<< mt->getName() <<" capacity: " << init_capacity <<" final capacity:" << finalCapacity <<std::endl;}
 }
 
 MoleculeList::~MoleculeList()

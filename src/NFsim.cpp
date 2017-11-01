@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 	map<string,string> argMap;
 	if(NFinput::parseArguments(argc, const_cast<const char**>(argv), argMap))
 	{
-		if ((RAZI_DEBUG) & SHOW_ARGS){
+		if ((DEBUG_ACTIVE) & SHOW_ARGS){
 			map<string,string>::iterator it;
 			for (it = argMap.begin(); it != argMap.end(); ++it){
 				cout<<"argMap=["<< it->first <<" , " << it->second <<" ];\n";

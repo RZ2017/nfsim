@@ -165,7 +165,7 @@ LocalFunction::LocalFunction(System *s,
 		this->typeII_localFunctionIndex.push_back(index);
 	}
 
-	if (RAZI_DEBUG & CREATE_FUNC){
+	if (DEBUG_ACTIVE & CREATE_FUNC){
 		cout<<"\t\t Creating Local Function Object for:\t"<<this->name<<" expression:" << this->originalExpression<<" parsedexp:"<<  this->parsedExpression<< endl;
 		cout<<"\t\t\t Collected Type-II Molecules are:      \t";		for(unsigned int an = 0; an < addedMoleculeTypes.size(); an++) cout<< addedMoleculeTypes[an]->getName() << ", "; cout<<endl;
 		cout<<"\t\t\t Local-Func Index in Type-II Mols are: \t";		for(unsigned int an = 0; an < addedMoleculeTypes.size(); an++) cout<< typeII_localFunctionIndex[an] << ", "; cout<<endl;
@@ -190,7 +190,7 @@ void LocalFunction::setEvaluateComplexScope( bool val ) {
 
 void LocalFunction::prepareForSimulation(System *s) {
 	bool verbose = false;
-	if (RAZI_DEBUG & CREATE_FUNC)
+	if (DEBUG_ACTIVE & CREATE_FUNC)
 		verbose = s->getverbose();
 
 
@@ -235,7 +235,7 @@ void LocalFunction::prepareForSimulation(System *s) {
 double LocalFunction::getValue(Molecule *m, int scope)
 {
 	bool verbose = false;
-	if (RAZI_DEBUG & CHECK_LBG)
+	if (DEBUG_ACTIVE & CHECK_LBG)
 		verbose = this->system->getverbose();
 
 	//cout<<"getting local function value: "<<this->nicename<<endl;

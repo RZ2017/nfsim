@@ -143,7 +143,7 @@ void Observable::addReferenceToMyself(mu::Parser *p)
 }
 void Observable::addReferenceToMyself(string referenceName, mu::Parser *p)
 {
-	if(RAZI_DEBUG & CREATE_OBS) cout<<"OBS:"<<this->getName()<< " tries to add a reference: "<< referenceName <<"  to function:"<< p->GetExpr()<<endl;
+	if(DEBUG_ACTIVE & CREATE_OBS) cout<<"OBS:"<<this->getName()<< " tries to add a reference: "<< referenceName <<"  to function:"<< p->GetExpr()<<endl;
 	p->DefineVar(referenceName,&count);
 }
 void Observable::addDependentRxn(ReactionClass *r)

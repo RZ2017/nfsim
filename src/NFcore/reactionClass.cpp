@@ -12,7 +12,7 @@ using namespace NFcore;
 ReactionClass::ReactionClass(string name, double baseRate, string baseRateParameterName, TransformationSet *transformationSet, System *s)
 {
 	bool verbose=false;
-	if (RAZI_DEBUG & CREATE_REACTION)
+	if (DEBUG_ACTIVE & CREATE_REACTION)
 		verbose = system->getverbose();
 
 
@@ -347,7 +347,7 @@ void ReactionClass::printDetails() const {
 void ReactionClass::fire(double random_A_number) {
 
 	bool verbose = false;
-	if (RAZI_DEBUG & (SHOW_FIRE | SHOW_RHS))
+	if (DEBUG_ACTIVE & (SHOW_FIRE | SHOW_RHS))
 		verbose = this->system->getverbose();
 
 
@@ -356,7 +356,7 @@ void ReactionClass::fire(double random_A_number) {
 
 	if(verbose){
 		cout<<"\n=======================================================================================\n";
-		if (RAZI_DEBUG & SHOW_FIRE){ // & ((name.compare(TEST_REAC)==0) | (TEST_REAC == "ALL")) ){
+		if (DEBUG_ACTIVE & SHOW_FIRE){ // & ((name.compare(TEST_REAC)==0) | (TEST_REAC == "ALL")) ){
 			this->printFullDetails();  //mypause(-1);
 		}else{
 			this->printDetails();
@@ -622,8 +622,8 @@ void ReactionClass::fire(double random_A_number) {
 
 	//display final product molecules for debugging..
 
-#if RAZI_DEBUG == 0x0FFF
-	if(system->getverbose() && 0 && (RAZI_DEBUG & SHOW_RHS))
+#if DEBUG_ACTIVE == 0x0FFF
+	if(system->getverbose() && 0 && (DEBUG_ACTIVE & SHOW_RHS))
 	for( molIter = products.begin(); molIter != products.end(); molIter++ ) {
 		cout<<">>molecule: "<<(*molIter)->getMoleculeTypeName()<<endl;
 	 	(*molIter)->printDetails();
@@ -647,7 +647,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 	//return true;  //Razi: bypass check only for test, later uncomment
 	bool verbose = false;
-	if (RAZI_DEBUG & (SHOW_FIRE | SHOW_RHS))
+	if (DEBUG_ACTIVE & (SHOW_FIRE | SHOW_RHS))
 		verbose = this->system->getverbose();
 	//verbose = false;
 	if (verbose) cout<<"RxnClass:: checkReaction() is called.\n";

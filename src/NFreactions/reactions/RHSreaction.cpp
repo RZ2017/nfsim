@@ -20,7 +20,7 @@ RHSRxnClass::RHSRxnClass(   //Razi: this version supports RHS functions
 	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
 	bool verbose=false;
-	if (RAZI_DEBUG & CREATE_REACTION)
+	if (DEBUG_ACTIVE & CREATE_REACTION)
 		verbose = system->getverbose();
 
 	if (verbose) {cout<<"\n\tRHS RXN:"<<name<<" with RHS composite functions:"<< function->getName() << "and "<< n_reactants <<" reactants is created.\n"; mypause(-1);}
@@ -307,7 +307,7 @@ double RHSRxnClass::evaluateLocalFunctions(MappingSet *ms)
 double RHSRxnClass::update_a() {
 //Razi :Source is BasicRxnClass, check for modifications
 bool verbose = false;
-if (RAZI_DEBUG & SHOW_SIM)
+if (DEBUG_ACTIVE & SHOW_SIM)
 	verbose = system->getverbose();
 
 #ifdef FIX_A   //Razi: Propensity of a reaction should be perhaps the minimum of reactant counts and not multiplication of it, later check
@@ -390,7 +390,7 @@ void RHSRxnClass::printDetails() const
 	}
 
 /*
-	if (RAZI_DEBUG & SHOW_FIRE) //Razi: print details of ractants: for some reasons it does not work, later check (e.g.null pointers)
+	if (DEBUG_ACTIVE & SHOW_FIRE) //Razi: print details of ractants: for some reasons it does not work, later check (e.g.null pointers)
 		for(unsigned int i=0; i<n_reactants; i++){
 			try{
 				reactantLists[i]->printDetails();

@@ -64,7 +64,7 @@ Molecule::Molecule(MoleculeType * parentMoleculeType, int listId)
 	copyMptr = 0;   //Razi: no copy exists yet
 #endif
 
-	if((RAZI_DEBUG & CREATE_MOLECULE)&& (listId<=3))	{
+	if((DEBUG_ACTIVE & CREATE_MOLECULE)&& (listId<=3))	{
 		std::cout<<"\tI just created a Molecule of Type:"<< this->parentMoleculeType->getName() <<" and a complex with ID:"<<ID_complex <<"  Type ID:" <<ID_type << "  Unique ID:" << ID_unique <<" List ID:" << listId<<" UsingComlexFlag:"<<useComplex<<"....\n";
 	}
 }

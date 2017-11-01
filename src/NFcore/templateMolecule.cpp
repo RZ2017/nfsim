@@ -247,7 +247,7 @@ void TemplateMolecule::addComponentConstraint(string cName, int stateValue) {
 	compStateConstraint_Constraint=newConstraint_Constraint;
 	n_compStateConstraint++;
 	compIsAlwaysMapped[compIndex]=true;
-	if (RAZI_DEBUG & CREATE_TEMPLATES) {cout<< "\tAdd Constraint to Template-ID:"<< this->uniqueTemplateID  <<" M-Type:"<<this->moleculeType->getName()<< "   Component["<< compIndex <<"]:\"" << cName <<"\", new state:"<< stateValue <<"   Total Const:" << n_compStateConstraint<<endl;}
+	if (DEBUG_ACTIVE & CREATE_TEMPLATES) {cout<< "\tAdd Constraint to Template-ID:"<< this->uniqueTemplateID  <<" M-Type:"<<this->moleculeType->getName()<< "   Component["<< compIndex <<"]:\"" << cName <<"\", new state:"<< stateValue <<"   Total Const:" << n_compStateConstraint<<endl;}
 
 }
 void TemplateMolecule::addComponentExclusion(string cName, string stateName) {
@@ -578,11 +578,11 @@ void TemplateMolecule::bind(TemplateMolecule *t1, string bSiteName1, string comp
 {
 	if(t1->moleculeType->isEquivalentComponent(bSiteName1)) {
 		t1->addSymBond(bSiteName1, compId1, t2, bSiteName2);
-		if(RAZI_DEBUG & CREATE_TEMPLATES){cout<<"\tAdd Symmetric Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< "  site:"<< bSiteName2<<endl;}
+		if(DEBUG_ACTIVE & CREATE_TEMPLATES){cout<<"\tAdd Symmetric Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< "  site:"<< bSiteName2<<endl;}
 		//cout<<"cannot handle symmetric binding yet."<<endl;
 	} else {
 		t1->addBond(bSiteName1, t2, bSiteName2);
-		if(RAZI_DEBUG & CREATE_TEMPLATES){cout<<"\tAdd Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< " site:"<< bSiteName2<<endl;}
+		if(DEBUG_ACTIVE & CREATE_TEMPLATES){cout<<"\tAdd Bound TM1:"<<t1->getMoleculeTypeName()<< " site:"<< bSiteName1<< "   TM2:"<<t2->getMoleculeTypeName()<< " site:"<< bSiteName2<<endl;}
 	}
 
 	if(t2->moleculeType->isEquivalentComponent(bSiteName2)) {

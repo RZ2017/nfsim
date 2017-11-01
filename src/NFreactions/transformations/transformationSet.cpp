@@ -45,7 +45,7 @@ TransformationSet::TransformationSet(vector <TemplateMolecule *> reactantTemplat
 	//Set up our transformation vectors
 
 
-	if(RAZI_DEBUG & RUN_REACTIONS){
+	if(DEBUG_ACTIVE & RUN_REACTIONS){
 		if (n_reactants>1){
 			cout<<"\tTransformationSet object created for Templates["<<n_reactants<<"]="<<reactantTemplates[0]->getPatternString()<< ", "<<reactantTemplates[1]->getPatternString(); cin.get();
 		}
@@ -297,7 +297,7 @@ bool TransformationSet::addStateChangeTransform(TemplateMolecule *t, string cNam
 	transformations[reactantIndex].push_back(transformation);
 
 
-	if (RAZI_DEBUG & RUN_REACTIONS){
+	if (DEBUG_ACTIVE & RUN_REACTIONS){
 		cout<<"\tStateChange Transformation for ReactId:"<< reactantIndex<<"  TM:"<< t->getPatternString()<<",  Comp:" << cName <<", Val:" <<finalStateValue << ", Total Trans for This Reactant:"<<transformations[reactantIndex].size();
 		cin.get();
 	}
@@ -335,7 +335,7 @@ bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string Po
 	}
 
 	if (RHSfunc){
-		if (RAZI_DEBUG & SHOW_SIM) {
+		if (DEBUG_ACTIVE & SHOW_SIM) {
 			cout<<"\n\tRHS Reaction: found Local Func for ReactId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope<<endl ;}
 
 		this->RHSreactantIndex=ReactantIndex; //Razi: contains the reactant index with RHS function
@@ -348,7 +348,7 @@ bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string Po
 		Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
 		product_transformations[ReactantIndex].push_back(transformation);
 
-		if (RAZI_DEBUG  & RUN_REACTIONS){
+		if (DEBUG_ACTIVE  & RUN_REACTIONS){
 			cout<<"\n\tAdd RHS Local Func for ProductId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This product :"<<product_transformations[ReactantIndex].size();
 			cin.get();
 		}
@@ -365,7 +365,7 @@ bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string Po
 		Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
 		transformations[ReactantIndex].push_back(transformation);
 
-		if (RAZI_DEBUG  & (CREATE_FUNC | RUN_REACTIONS)){
+		if (DEBUG_ACTIVE  & (CREATE_FUNC | RUN_REACTIONS)){
 			cout<<"\n\tAdd Local Func for ReactId:"<< ReactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This Reactant:"<<transformations[ReactantIndex].size();
 		}
 
@@ -392,7 +392,7 @@ bool TransformationSet::addLocalFunctionReference(TemplateMolecule *t, string Po
 	Transformation *transformation = TransformationFactory::genLocalFunctionReference(PointerName,scope,t);
 	transformations[reactantIndex].push_back(transformation);
 
-	if (RAZI_DEBUG  & RUN_REACTIONS){
+	if (DEBUG_ACTIVE  & RUN_REACTIONS){
 		cout<<"\n\tAdd Local Func for ReactId:"<< reactantIndex<<"  TM:"<< t->getPatternString()<<",  PointerName:" << PointerName <<", Scope:" <<scope << ", Total Trans for This Reactant:"<<transformations[reactantIndex].size();
 		cin.get();
 	}
@@ -502,7 +502,7 @@ bool TransformationSet::addBindingTransform(TemplateMolecule *t1, string bSiteNa
 	Transformation *transformation2 = TransformationFactory::genBindingTransform2(cIndex2);
 
 
-	if (RAZI_DEBUG & RUN_REACTIONS){
+	if (DEBUG_ACTIVE & RUN_REACTIONS){
 		cout<<"\n\tAdd Binding Transform for ReactIds:"<< reactantIndex1 <<", "<<reactantIndex2<<"  TMs:"<< t1->getPatternString()<<", "<< t2->getPatternString()<<",  Sites:" << bSiteName1<<", "<<bSiteName2 <<", SiteIndexes: "<<cIndex1 <<", "<< cIndex2<< ", Total Trans for These Reactant:"<<1+transformations[reactantIndex1].size()<<", "<<1+transformations[reactantIndex2].size();
 		cin.get();
 	}
@@ -665,7 +665,7 @@ bool TransformationSet::addUnbindingTransform(TemplateMolecule *t, string bSiteN
 	// 3) Add the transformation object to the TransformationSet
 	transformations[reactantIndex].push_back(transformation);
 
-	if (RAZI_DEBUG & RUN_REACTIONS){
+	if (DEBUG_ACTIVE & RUN_REACTIONS){
 		cout<<"\n\tAdd UnBinding Transform for ReactId:"<< reactantIndex <<",  TM:"<<tToTransform->getPatternString()<< ",  out of TMs:"<< t->getPatternString()<<", "<< t2->getPatternString()<<",  Sites:" << bSiteName<<", "<<bSiteName2 <<", Selected SiteIndex: "<<cIndex <<", Total Trans for Thess Reactant:"<<transformations[reactantIndex].size();
 		cin.get();
 	}
@@ -825,7 +825,7 @@ int TransformationSet::find(TemplateMolecule *t, bool RHSfunc)
 					cnt++;
 				    pos += moltext.length();
 				    if (cnt==order2){ ///found the relevant reactant
-				    	if (RAZI_DEBUG & (CREATE_REACTION|SHOW_FIRE)) cout<<"transformationset:find successfully, molecule:"<<moltext <<" reatant["<<i <<"]:"<<pattern<<"   product["<< findindex2 <<"]:" << this->productTemplates[findindex2]->getPatternString() <<endl;
+				    	if (DEBUG_ACTIVE & (CREATE_REACTION|SHOW_FIRE)) cout<<"transformationset:find successfully, molecule:"<<moltext <<" reatant["<<i <<"]:"<<pattern<<"   product["<< findindex2 <<"]:" << this->productTemplates[findindex2]->getPatternString() <<endl;
 				    	findIndex = i; return findIndex;
 				    }
 				}
@@ -950,7 +950,7 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 			}
 			else
 			{	// handle other transforms
-				//if (RAZI_DEBUG & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
+				//if (DEBUG_ACTIVE & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
 
 
 				if (check_ring && (transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING) ){

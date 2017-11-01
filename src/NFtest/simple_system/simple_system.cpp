@@ -58,7 +58,7 @@ void NFtest_ss::run()
 	System *s = new System("Simple System", useComplex, globalMoleculeLimit);
 
 
-	if (RAZI_DEBUG & CREATE_MOLECULE){
+	if (DEBUG_ACTIVE & CREATE_MOLECULE){
 		cout<<"System Created, Using Complex: "<<s->isUsingComplex()<<endl; s->printAllParameters();
 		cout<<"=======================================================================================\n\n";
 	}
@@ -67,56 +67,56 @@ void NFtest_ss::run()
 	//  2)  Create the types of molecules that are in the system (see functions below)
 	//      MoleculeTypes contain all the information about the types of molecules that can exist.
 	MoleculeType *molX = createX(s);
-	if (RAZI_DEBUG & CREATE_MOLECULE){cout<<"=======================================================================================\n\n"; }
+	if (DEBUG_ACTIVE & CREATE_MOLECULE){cout<<"=======================================================================================\n\n"; }
 	MoleculeType *molY = createY(s);
-	if (RAZI_DEBUG & CREATE_MOLECULE){cout<<"=======================================================================================\n\n"; }
+	if (DEBUG_ACTIVE & CREATE_MOLECULE){cout<<"=======================================================================================\n\n"; }
 
 
 	//  3)  Instantiate the actual molecules (this populate function is the easiest way, but you can do it
 	//      manually as well by creating each molecule separately - see the MoleculeType::populate function for
 	//      an example on how this can be done).
 	molY->populateWithDefaultMolecules(numOfMoleculeY);
-	if (RAZI_DEBUG & (CREATE_MOLECULE | CREATE_SPECIES) ){cout<<"=======================================================================================\n\n"; }
+	if (DEBUG_ACTIVE & (CREATE_MOLECULE | CREATE_SPECIES) ){cout<<"=======================================================================================\n\n"; }
 	molX->populateWithDefaultMolecules(numOfMoleculeX);
-	if (RAZI_DEBUG & (CREATE_MOLECULE | CREATE_SPECIES) ){cout<<"=======================================================================================\n\n"; }
+	if (DEBUG_ACTIVE & (CREATE_MOLECULE | CREATE_SPECIES) ){cout<<"=======================================================================================\n\n"; }
 
 
 	//  4)  Create the reactions and add them to the system.  These are calls to specific functions
 	//      below where I set up the details of the reactions.  The numbers are the rates and are in
 	//      arbitrary units here.  In general, the rates should be in units of per second.
 	ReactionClass * x_dephos = createReactionXDephos(molX, dephosRate);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	ReactionClass *rXbindY = createReactionXYbind(molX, molY, kOn);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	ReactionClass *rXunbindY = createReactionXYunbind(molX, molY, kOff);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	ReactionClass *rYphosX = createReactionYphosX(molX, molY, kCat);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 
 	s->addReaction(x_dephos);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	s->addReaction(rXbindY);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	s->addReaction(rXunbindY);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 	s->addReaction(rYphosX);
-	if (RAZI_DEBUG & CREATE_REACTION){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_REACTION){cout<<"=======================================================================================\n"; }
 
 
 	//  5)  Add the observables that we want to track throughout the simulation.  Again, to
 	//      see how this is done, see the function below.
 	addObs(s, molX, molY);
-	if (RAZI_DEBUG & CREATE_OBS){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & CREATE_OBS){cout<<"=======================================================================================\n"; }
 
 
 
 	//  6)  Prepare the system for simulation (this adds molecules to reactionLists
 	//      and counts up the observables)
 	s->prepareForSimulation();   //A.RAZI until here
-	if (RAZI_DEBUG & RUN_REACTIONS){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & RUN_REACTIONS){cout<<"=======================================================================================\n"; }
 
 	s->printAllReactions();
-	if (RAZI_DEBUG & RUN_REACTIONS){cout<<"=======================================================================================\n"; }
+	if (DEBUG_ACTIVE & RUN_REACTIONS){cout<<"=======================================================================================\n"; }
 
 
 	//  7)  Register the output file name (This will put the file in your working directory)

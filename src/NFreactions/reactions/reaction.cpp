@@ -14,7 +14,7 @@ using namespace NFcore;
 FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, TransformationSet *transformationSet, System *s) :
 	BasicRxnClass(name,1,"",transformationSet,s)
 {
-	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with global function:"<< gf->getNiceName() <<" is created.\n";  mypause(-1);}
+	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with global function:"<< gf->getNiceName() <<" is created.\n";  mypause(-1);}
 	this->cf=0;
 	this->gf=gf;
 	for(int vr=0; vr<gf->getNumOfVarRefs(); vr++) {
@@ -33,7 +33,7 @@ FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, Transfor
 FunctionalRxnClass::FunctionalRxnClass(string name, CompositeFunction *cf, TransformationSet *transformationSet, System *s) :
 	BasicRxnClass(name,1, "", transformationSet,s)
 {
-	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with composite function:"<< cf->getName() <<" is created.\n";  mypause(-1);}
+	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with composite function:"<< cf->getName() <<" is created.\n";  mypause(-1);}
 	this->gf=0;
 	this->cf=cf;
 	this->cf->setGlobalObservableDependency(this,s);
@@ -146,7 +146,7 @@ void FunctionalRxnClass::printDetails() const {
 MMRxnClass::MMRxnClass(string name, double kcat, double Km, TransformationSet *transformationSet,System *s) :
 	BasicRxnClass(name,1,"",transformationSet,s)
 {
-	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tMM-RXN:"<<name<<" is created.\n";  mypause(-1);}
+	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tMM-RXN:"<<name<<" is created.\n";  mypause(-1);}
 
 	this->Km = Km;
 	this->kcat = kcat;
@@ -192,7 +192,7 @@ void MMRxnClass::printDetails() const {
 BasicRxnClass::BasicRxnClass(string name, double baseRate, string baseRateName, TransformationSet *transformationSet, System *s) :
 	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
-	if ((RAZI_DEBUG) & (CREATE_REACTION)) {cout<<"\n\tBasic RXN:"<<name<<" with base rate:"<< baseRate <<" is created.\n";  mypause(-1);}
+	if ((DEBUG_ACTIVE) & (CREATE_REACTION)) {cout<<"\n\tBasic RXN:"<<name<<" with base rate:"<< baseRate <<" is created.\n";  mypause(-1);}
 	this->reactionType = BASIC_RXN;  //set as normal reaction here, but deriving reaction classes can change this
 	reactantLists = new ReactantList *[n_reactants];
 	//Set up the reactantLists
@@ -442,7 +442,7 @@ double BasicRxnClass::update_a()
 #endif
 
 
-	if ((RAZI_DEBUG & (SHOW_FIRE | CREATE_REACTION) && (this->getName().compare("XbPlusYbBind")==0))) {// && (this->getName().compare("XbPlusYbBind")==0) && 0){ //don't show anymore
+	if ((DEBUG_ACTIVE & (SHOW_FIRE | CREATE_REACTION) && (this->getName().compare("XbPlusYbBind")==0))) {// && (this->getName().compare("XbPlusYbBind")==0) && 0){ //don't show anymore
 		int i,j,k;
 		cout <<"\tupdate_a() is called for Basic reaction:"<<this->name << " totalRateFlag:"<<totalRateFlag<<"   Base rate:"<<baseRate<<endl;
 		for(i=0; i<n_reactants; i++){
@@ -488,7 +488,7 @@ int BasicRxnClass::getCorrectedReactantCount(unsigned int reactantIndex) const
 
 void BasicRxnClass::printFullDetails() const
 {
-	if ((RAZI_DEBUG) & (SHOW_FIRE | CREATE_REACTION)){
+	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)){
 		unsigned int i=0;
 //#ifdef RHS_FUNC
 //			cout<<"BasicRxnClass: "<<name<<"  has "<< n_reactants<<" reactants and "<< n_mappingsets<< " mappingSets and"<< n_productTemplates <<" Output products." << endl;  //razi added

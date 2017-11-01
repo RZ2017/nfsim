@@ -21,7 +21,7 @@ DORRxnClass::DORRxnClass(
 		vector <string> &lfArgumentPointerNameList, System *s) :
 	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
-	if ((RAZI_DEBUG) & CREATE_REACTION) {cout<<"\n\tDOR RXN:"<<name<<" with composite function:"<< function->getName() <<" is created.\n";  mypause(-1);}
+	if ((DEBUG_ACTIVE) & CREATE_REACTION) {cout<<"\n\tDOR RXN:"<<name<<" with composite function:"<< function->getName() <<" is created.\n";  mypause(-1);}
 
 //	cout<<"ok, here we go..."<<endl;
 	vector <TemplateMolecule *> dorMolecules;
@@ -35,7 +35,7 @@ DORRxnClass::DORRxnClass(
 
 	//these blocks are just for debugging a certain problem. delete in the final version
 	bool show_flag=false;
-	if( (RAZI_DEBUG & CHECK_LBG) && (name.compare("Bug1")|| name.compare("NoBug1")) ) show_flag=true; //razi added for debugging
+	if( (DEBUG_ACTIVE & CHECK_LBG) && (name.compare("Bug1")|| name.compare("NoBug1")) ) show_flag=true; //razi added for debugging
 	if (show_flag){// cls();
 		for(unsigned int r=0; r<n_reactants; r++)
 			try{cout<<"\n\n\nBBB1-DORreactantIndex:"<<r<<"   MolType:"<< reactantTemplates[r]->getMoleculeType()->getName()<<endl;}catch(...){cerr<<"Error in BBB1\n";}
@@ -735,7 +735,7 @@ DOR2RxnClass::DOR2RxnClass(
 	) : ReactionClass(name,baseRate,baseRateName,transformationSet,s)
 {
 
-	if (RAZI_DEBUG & CREATE_REACTION) {cout<<"\n\tDOR2 RXN:"<<name<<" with composite functions:"<< function1->getName() << " and " << function2->getName()<< " is created.\n"; mypause(-1);}
+	if (DEBUG_ACTIVE & CREATE_REACTION) {cout<<"\n\tDOR2 RXN:"<<name<<" with composite functions:"<< function1->getName() << " and " << function2->getName()<< " is created.\n"; mypause(-1);}
 
 	// TODO: figure out if there are used for anything
 	//vector <TemplateMolecule *> dorMolecules1;
