@@ -756,13 +756,14 @@ Molecule::Molecule(Molecule &obj){ //const Molecule &obj
 void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool verbose)
 //void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, vector <Molecule *> &origMs, vector <Molecule *> &copyMs, int maxDepth, int start_id)
 {
+
 	if(origM==0) {
 		cerr<<"Error in Molecule::CopybreadthFirstSearch, m is null.\n";	std::exit(3);
 	}
 	int currentDepth = 0;
 
 
-//cout<<"AAA-traversing on start"<<endl;mypause(-1);
+	//cout<<"AAA-traversing on start"<<endl;mypause(-1);
 	//m->printDetails();
 
 	//First add this molecule
@@ -773,16 +774,17 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 	Molecule * copyM1;
 	if (origM->getCopy()){
 		copyM1 = origM->getCopy();
-if (verbose) cout<<"AAA-get previous copy for original molecule.\n";
+		if (averbose) cout<<"AAA-get previous copy for original molecule.\n";
 	}else{
 		copyM1 = new Molecule(*origM);  //Razi: check
 		copyM1->setUniqueID(start_id++);
 		origM->setCopy(copyM1);  //Razi: let the source molecule remember its copies
-if (verbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<<copyM1->getUniqueID()<<endl; //mypause(-1);
+		if (averbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<<copyM1->getUniqueID()<<endl; //mypause(-1);
 	}
 	copyM=copyM1;
-
-	origM->setCopy(copyM);   //Razi: let the source molecule remember its copies
+	copyM->printDetails();
+	copyM1->printDetails();
+	//	origM->setCopy(copyM);   //Razi: let the source molecule remember its copies
 	copyMs.push_back(copyM);
 
 	//copyM=copyM1;
@@ -790,17 +792,19 @@ if (verbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<
 	origM->hasVisitedMolecule=true;
 
 
-//cout<<"AAA-before while"; mypause(-1);
+	//cout<<"AAA-before while"; mypause(-1);
 	Molecule * neighbor_copy;
 	//Look at children until the queue is empty
 	while(!q.empty())
 	{
 
-//cout<<"AAA-start while"; mypause(-1);
+		//cout<<"AAA-start while"; mypause(-1);
 
 		//Get the next parent to look at (currentMolecule)
 		Molecule *cM = q.front();
 		Molecule * cM_copy = cM->getCopy();
+		cout<<"namecopy:"<<cM->getMoleculeTypeName()<<endl;
+		cM_copy->printDetails();
 		if (!cM_copy){
 			cerr<<"Molecule::CopybreadthFirstSearch: No copy for a molecule alreaidy in the queue. I am quitting..."; exit(0);
 		}
@@ -816,14 +820,14 @@ if (verbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<
 		int cMax = cM->numOfComponents; int cIndex1,cIndex2;
 		for(int c=0; c<cMax; c++)
 		{
-//cout<<"AAA-start while-for"; mypause(-1);
+			//cout<<"AAA-start while-for"; mypause(-1);
 
 			//cM->getComp
 			if(cM->isBindingSiteBonded(c))
 			{
 				Molecule *neighbor = cM->getBondedMolecule(c);
-				//cout<<"looking at neighbor: "<<endl;
-				//neighbor->printDetails();
+				cout<<"looking at neighbor: "<<endl;
+				neighbor->printDetails();
 				if(!neighbor->hasVisitedMolecule)
 				{
 					neighbor->hasVisitedMolecule=true;
@@ -832,53 +836,79 @@ if (verbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<
 					origMs.push_back(neighbor);
 					if (neighbor->getCopy()){
 						neighbor_copy = neighbor->getCopy();
-//if (verbose) cout<<"BBB-get previous copy for a neighbor molecule.\n";
+						//if (averbose) cout<<"BBB-get previous copy for a neighbor molecule.\n";
 					}else{
 						neighbor_copy = new Molecule(*neighbor);  //Razi: check
 						neighbor_copy->setUniqueID(start_id++);
 						neighbor->setCopy(neighbor_copy);   //Razi: let the source molecule remember its copies
-//if (verbose) {cout<<"BBB-get a fresh copy for a neighbor molecule. ID:"<<start_id-1<<"="<<neighbor_copy->getUniqueID()<<endl; mypause(-1);}
+						neighbor->printDetails();
+						//if (averbose) {cout<<"BBB-get a fresh copy for a neighbor molecule. ID:"<<start_id-1<<"="<<neighbor_copy->getUniqueID()<<endl; mypause(-1);}
 					}
-//cout<<"BBB-m id after copy: "<< m->getUniqueID()<<"  " <<endl; mypause(-1);
-
-
-					cIndex1 = c;
-					cIndex2 = cM->getBondedMoleculeBindingSiteIndex(cIndex1);
-//if (verbose) {cout<<"Binding copy molecule when traversing m1 uID:" << cM_copy->getUniqueID() <<" index1:"<<c<<"  m2 uID:" << neighbor_copy->getUniqueID() <<"  index2:"<< cIndex2 <<endl; mypause(-1);}
-					cM->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
-//if (verbose) {cout<<"Binding copy molecule finished successfully."<<endl; mypause(-1);}
+					//cout<<"BBB-m id after copy: "<< m->getUniqueID()<<"  " <<endl; mypause(-1);
+					//	cIndex1 = c;
+					//	cIndex2 = cM->getBondedMoleculeBindingSiteIndex(cIndex1);
+					//	if (averbose) {cout<<"Binding copy molecule when traversing m1 uID:" << cM_copy->getUniqueID() <<" index1:"<<c<<"  m2 uID:" << neighbor_copy->getUniqueID() <<"  index2:"<< cIndex2 <<endl; mypause(-1);}
+					//	cM->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
+					//if (averbose) {cout<<"Binding copy molecule finished successfully."<<endl; mypause(-1);}
 					copyMs.push_back(neighbor_copy);
 
-
+					neighbor_copy->printDetails();
 					q.push(neighbor);
 					d.push(currentDepth+1);
 					//cout<<"adding... to traversal list."<<endl;
 				}
+
 			}
 		}
 	}
-//cout<<"AAA-start while end"; mypause(-1);
+	//for  each el in origMS
+
+	for( molIter = origMs.begin(); molIter != origMs.end(); molIter++ ){
+
+		int cMax = (*molIter)->numOfComponents;int cIndex1,cIndex2;
+		Molecule *cM_copy = (*molIter)->getCopy();
+		cout<<"name11:"<<cM_copy->getMoleculeTypeName()<<endl;
+		for(int c=0; c<cMax; c++)
+		{
+			if((*molIter)->isBindingSiteBonded(c))
+			{
+
+				Molecule *neighbor = (*molIter)->getBondedMolecule(c);
+				Molecule *neighbor_copy = neighbor->getCopy();
+				cIndex1 = c;
+				cIndex2 = (*molIter)->getBondedMoleculeBindingSiteIndex(cIndex1);
+
+				if(neighbor_copy->hasVisitedBond[cIndex2] != true &&cM_copy -> hasVisitedBond[c] != true)
+				{
+					(*molIter)->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
+					neighbor_copy -> hasVisitedBond[cIndex2] = true;
+					cM_copy -> hasVisitedBond[c] = true;
+				}
+			}
+		}
+	}
+	//cout<<"AAA-start while end"; mypause(-1);
 
 
 	//clear the has visitedMolecule values
 	for( molIter = origMs.begin(); molIter != origMs.end(); molIter++ )
-  		(*molIter)->hasVisitedMolecule=false;
+		(*molIter)->hasVisitedMolecule=false;
 
-//cout<<"AAA-middle"; mypause(-1);
-//cout<<"copyMs.size():"<<copyMs.size()<<endl; mypause(-1);
+	//cout<<"AAA-middle"; mypause(-1);
+	//cout<<"copyMs.size():"<<copyMs.size()<<endl; mypause(-1);
 
 	for( molIter = copyMs.begin(); molIter != copyMs.end(); molIter++ ){
 		if (*molIter){
 			try{
-//			cout<<"good pointer 1: "; mypause(-1);
-			(*molIter)->hasVisitedMolecule=false;
-//			cout<<"good pointer 2"; mypause(-1);
+				//			cout<<"good pointer 1: "; mypause(-1);
+				(*molIter)->hasVisitedMolecule=false;
+				//			cout<<"good pointer 2"; mypause(-1);
 			}catch (string err){
 				cout<<"Error:"<<err;
 			}
 		}
 	}
-//cout<<"XXX-traversing on end"<<endl;mypause(-1);
+	//cout<<"XXX-traversing on end"<<endl;mypause(-1);
 
 }
 
