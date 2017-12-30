@@ -893,8 +893,8 @@ namespace NFcore
 			void traverseBondedNeighborhood(list <Molecule *> &members, int traversalLimit);
 			static void breadthFirstSearch(list <Molecule *> &members, Molecule *m, int depth);
 #ifdef RHS_FUNC //Razi:  Added to support RHS functions
-			//This function is developed to copy a molecule and its connected subnetwork
-			void CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool verbose);
+			void CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool averbose);
+			void unpointbreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool averbose);
 			//void CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, vector <Molecule *> &origMs, vector <Molecule *> &copyMs, int maxDepth, int start_id);
 			Molecule * clone();  //lets use copy constructor
 			Molecule(Molecule &obj);   //copy constructor: use const Molecule &obj
@@ -902,6 +902,8 @@ namespace NFcore
 			Molecule * copyMptr;
 			Molecule * originalMptr;
 			void setCopy(Molecule * m){copyMptr = m;};
+			void nullCopy(){copyMptr = 0;};
+
 			void setUniqueID(int ID);
 #endif
 

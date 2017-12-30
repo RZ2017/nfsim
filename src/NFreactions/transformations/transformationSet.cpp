@@ -927,8 +927,10 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 
 //cout<<"AAA2 nMappingSet:"<<getNmappingSets()<<"  ";mypause(-1);
 	// loop over reactants and added molecules, apply transforms to each
+	
 	for(unsigned int r=0; r<getNmappingSets(); r++)
 	{
+
 		MappingSet *ms = mappingSets[r];
 		for ( unsigned int t=0;  t<transformations[r].size();  t++ )
 		{
@@ -951,10 +953,9 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 			else
 			{	// handle other transforms
 				//if (DEBUG_ACTIVE & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
-
-
 				if (check_ring && (transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING) ){
 					//make sure that unbin breakes down the involving molecules into separate islands [there is no other connection]
+
 
 					Molecule * mol1 = ms->get(t)->getMolecule();
 					int index1 = ms->get(t)->getIndex();
@@ -1004,6 +1005,8 @@ bool TransformationSet::transform(MappingSet **mappingSets){
 #else
 bool TransformationSet::transform(MappingSet **mappingSets)
 {
+		cout<<"debugAli2"<<endl;
+cin.get();
 	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
 
 	/*

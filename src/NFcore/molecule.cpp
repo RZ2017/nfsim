@@ -749,7 +749,92 @@ Molecule::Molecule(Molecule &obj){ //const Molecule &obj
 	//cout<<": end.\n"; mypause(-1);
 }
 
+void Molecule::unpointbreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <Molecule *> &origMs, list <Molecule *> &copyMs, int maxDepth, int start_id, bool averbose)
+//void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, vector <Molecule *> &origMs, vector <Molecule *> &copyMs, int maxDepth, int start_id)
+{
+	if(origM==0) {
+		cerr<<"Error in Molecule::CopybreadthFirstSearch, m is null.\n";	std::exit(3);
+	}
+	int currentDepth = 0;
 
+
+	//cout<<"AAA-traversing on start"<<endl;mypause(-1);
+	//m->printDetails();
+
+	//First add this molecule
+	q.push(origM);
+	//origMs.push_back(origM);
+
+	//make a fresh copy or get an existing copy
+	Molecule * copyM1;
+	if (origM->getCopy()){
+		origM->nullCopy();
+	}
+	//copyM=copyM1;
+	d.push(currentDepth+1);
+	//origM->hasVisitedMolecule=true;
+
+
+	//cout<<"AAA-before while"; mypause(-1);
+	Molecule * neighbor_copy;
+	//Look at children until the queue is empty
+	while(!q.empty())
+	{
+
+		//cout<<"AAA-start while"; mypause(-1);
+
+		//Get the next parent to look at (currentMolecule)
+		Molecule *cM = q.front();
+		Molecule * cM_copy = cM->getCopy();
+
+
+		currentDepth = d.front();
+		q.pop();
+		d.pop();
+
+		//Make sure the depth does not exceed the limit we want to search
+		if((maxDepth!=ReactionClass::NO_LIMIT) && (currentDepth>=maxDepth)) continue;
+
+		//Loop through the bonds
+		int cMax = cM->numOfComponents;
+		for(int c=0; c<cMax; c++)
+		{
+			//cout<<"AAA-start while-for"; mypause(-1);
+
+			//cM->getComp
+			if(cM->isBindingSiteBonded(c))
+			{
+				Molecule *neighbor = cM->getBondedMolecule(c);
+				//cout<<"looking at neighbor: "<<endl;
+				//neighbor->printDetails();
+				if(!neighbor->hasVisitedMolecule)
+				{
+				//	neighbor->hasVisitedMolecule=true;
+
+					//make a fresh copy or get the pointer to the existing copy
+					//origMs.push_back(neighbor);
+					if (neighbor->getCopy()){
+						neighbor->nullCopy();
+						//if (averbose) cout<<"BBB-get previous copy for a neighbor molecule.\n";
+					}
+					//cout<<"BBB-m id after copy: "<< m->getUniqueID()<<"  " <<endl; mypause(-1);
+					//	cIndex1 = c;
+					//	cIndex2 = cM->getBondedMoleculeBindingSiteIndex(cIndex1);
+					//	if (averbose) {cout<<"Binding copy molecule when traversing m1 uID:" << cM_copy->getUniqueID() <<" index1:"<<c<<"  m2 uID:" << neighbor_copy->getUniqueID() <<"  index2:"<< cIndex2 <<endl; mypause(-1);}
+					//	cM->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
+					//if (averbose) {cout<<"Binding copy molecule finished successfully."<<endl; mypause(-1);}
+			//		copyMs.push_back(neighbor_copy);
+
+					q.push(neighbor);
+					d.push(currentDepth+1);
+					//cout<<"adding... to traversal list."<<endl;
+				}
+
+			}
+		}
+	}
+
+}
 
 
 //This function is developed to copy a molecule and its connected subnetwork
@@ -774,16 +859,12 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 	Molecule * copyM1;
 	if (origM->getCopy()){
 		copyM1 = origM->getCopy();
-		if (averbose) cout<<"AAA-get previous copy for original molecule.\n";
 	}else{
 		copyM1 = new Molecule(*origM);  //Razi: check
 		copyM1->setUniqueID(start_id++);
 		origM->setCopy(copyM1);  //Razi: let the source molecule remember its copies
-		if (averbose) cout<<"AAA-fresh copy for original molecule. ID:"<<start_id-1<<"="<<copyM1->getUniqueID()<<endl; //mypause(-1);
 	}
 	copyM=copyM1;
-	copyM->printDetails();
-	copyM1->printDetails();
 	//	origM->setCopy(copyM);   //Razi: let the source molecule remember its copies
 	copyMs.push_back(copyM);
 
@@ -803,8 +884,8 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 		//Get the next parent to look at (currentMolecule)
 		Molecule *cM = q.front();
 		Molecule * cM_copy = cM->getCopy();
-		cout<<"namecopy:"<<cM->getMoleculeTypeName()<<endl;
-		cM_copy->printDetails();
+		//cout<<"namecopy:"<<cM->getMoleculeTypeName()<<endl;
+		//cM_copy->printDetails();
 		if (!cM_copy){
 			cerr<<"Molecule::CopybreadthFirstSearch: No copy for a molecule alreaidy in the queue. I am quitting..."; exit(0);
 		}
@@ -826,8 +907,8 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 			if(cM->isBindingSiteBonded(c))
 			{
 				Molecule *neighbor = cM->getBondedMolecule(c);
-				cout<<"looking at neighbor: "<<endl;
-				neighbor->printDetails();
+				//cout<<"looking at neighbor: "<<endl;
+				//neighbor->printDetails();
 				if(!neighbor->hasVisitedMolecule)
 				{
 					neighbor->hasVisitedMolecule=true;
@@ -841,7 +922,7 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 						neighbor_copy = new Molecule(*neighbor);  //Razi: check
 						neighbor_copy->setUniqueID(start_id++);
 						neighbor->setCopy(neighbor_copy);   //Razi: let the source molecule remember its copies
-						neighbor->printDetails();
+					//	neighbor->printDetails();
 						//if (averbose) {cout<<"BBB-get a fresh copy for a neighbor molecule. ID:"<<start_id-1<<"="<<neighbor_copy->getUniqueID()<<endl; mypause(-1);}
 					}
 					//cout<<"BBB-m id after copy: "<< m->getUniqueID()<<"  " <<endl; mypause(-1);
@@ -852,7 +933,7 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 					//if (averbose) {cout<<"Binding copy molecule finished successfully."<<endl; mypause(-1);}
 					copyMs.push_back(neighbor_copy);
 
-					neighbor_copy->printDetails();
+					//neighbor_copy->printDetails();
 					q.push(neighbor);
 					d.push(currentDepth+1);
 					//cout<<"adding... to traversal list."<<endl;
@@ -867,7 +948,6 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 
 		int cMax = (*molIter)->numOfComponents;int cIndex1,cIndex2;
 		Molecule *cM_copy = (*molIter)->getCopy();
-		cout<<"name11:"<<cM_copy->getMoleculeTypeName()<<endl;
 		for(int c=0; c<cMax; c++)
 		{
 			if((*molIter)->isBindingSiteBonded(c))
