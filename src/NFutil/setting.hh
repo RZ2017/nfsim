@@ -49,7 +49,7 @@
 
 #define TEST_REAC   	"XWBindCond1"//"XYBind"//"Bug1"//"XaYbBind" //Razi:Show more messages for reactions: Use "ALL" to show all reactions
 #define RAZI_VER   1     //Razi: activates some debugging messages
-#define FIX_BUG1 1      //Razi: this applies some changes to fix the local function bug
+//#define FIX_BUG1 1      //Razi: this applies some changes to fix the local function bug
 
 
 #define RHS_FUNC   	//Razi: Activates function evaluation in the output

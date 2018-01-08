@@ -38,7 +38,7 @@ RHSRxnClass::RHSRxnClass(   //Razi: this version supports RHS functions
 
 	//Set the actual function
 	this->cfo = function;
-
+	cfo->RHS = true; 
 	//Initialize a to zero
 	this->a=0; //later check
 
@@ -305,11 +305,10 @@ double RHSRxnClass::evaluateLocalFunctions(MappingSet *ms)
 
 
 double RHSRxnClass::update_a() {
-//Razi :Source is BasicRxnClass, check for modifications
-bool verbose = false;
+	bool verbose = false;
+	double res = cfo->evaluateOnRHS(0, 0, CompositeFunction::EvalConditionalPart, false); 
 if (DEBUG_ACTIVE & SHOW_SIM)
 	verbose = system->getverbose();
-
 #ifdef FIX_A   //Razi: Propensity of a reaction should be perhaps the minimum of reactant counts and not multiplication of it, later check
 	double c;
 	a = 1.0;
@@ -317,9 +316,7 @@ if (DEBUG_ACTIVE & SHOW_SIM)
 	if (n_reactants >= 1){
 		for(unsigned int i=1; i<n_reactants; i++) {
 			c=getCorrectedReactantCount(i);	a=(a<c)?a:c;    //min(a,getCorrectedReactantCount(i)
-			mypause(0);
 			cout<<"\t update a for RHS reaction:"<< this->getName()<<"  i:"<<i<<" count:"<<c<< "  a:min(a,c):"<<a<<endl;
-			mypause(0);
 		}
 	}
 	a*=baseRate;
@@ -339,6 +336,8 @@ if (DEBUG_ACTIVE & SHOW_SIM)
 			a*=getCorrectedReactantCount(i);
 		}
 		a*=baseRate;
+		if(res!=0)
+			a*=res;
 	}
 
 #endif

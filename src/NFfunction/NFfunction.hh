@@ -376,6 +376,8 @@ namespace NFcore {
 
 				void setRHSFlag(bool val); //set to true for RHS, default: false
 				double evaluateOnProduct(Molecule * mol, int scope, int evaluationType, bool verbose);
+				double evaluateOnRHS(Molecule * mol, int scope, int evaluationType, bool averbose);
+				bool RHS;
 #endif
 
 				void setGlobalObservableDependency(ReactionClass *r, System *s);
@@ -395,10 +397,6 @@ namespace NFcore {
 				string name;
 				string originalExpression;
 				string parsedExpression;
-
-#ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
-				bool RHS;
-#endif
 
 				unsigned int n_allFuncs;
 				string * allFuncNames;

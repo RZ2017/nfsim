@@ -422,10 +422,10 @@ void ReactionClass::fire(double random_A_number) {
 
 
 	if (!this->checkReaction()){
-		if (verbose || 1) cout<<"\t\tReaction:" << name <<" did not pass the output product test !!!\n";
+		if (verbose) cout<<"\t\tReaction:" << name <<" did not pass the output product test !!!\n";
 		return;
 	}else{
-		if (verbose || 1) cout<<"output check passed ....\n";
+		if (verbose) cout<<"output check passed ....\n";
 	}
 
 
@@ -774,11 +774,11 @@ bool ReactionClass::checkReaction()   //clone reactants
 			// just for test, later delete
 			double res = cfo->evaluateOnProduct(mol, scope, CompositeFunction::EvalConditionalPart, false); //verbose=false
 			if(res==0) {
-				if (verbose|1) cout<<"\t\tRHS Reaction:" << name <<" DID NOT pass the RHS test. Continue firing ....\n";
+				if (verbose) cout<<"\t\tRHS Reaction:" << name <<" DID NOT pass the RHS test. Continue firing ....\n";
 				result=false;
 			}else {
 
-				if (verbose|1) cout<<"\t\tRHS Reaction:" << name <<" passed the RHS test. Continue firing ....\n";
+				if (verbose) cout<<"\t\tRHS Reaction:" << name <<" passed the RHS test. Continue firing ....\n";
 				result=true; //razi: the result is either pass or fail
 			}
 

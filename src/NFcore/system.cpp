@@ -587,7 +587,7 @@ void System::prepareForSimulation()
 void System::update_A_tot(ReactionClass *r, double old_a, double new_a)
 {
 	a_tot = selector->update(r,old_a,new_a);
-
+//cout<<"updated a:"<<a_tot<<endl;
 	//BUILT IN DIRECT SEARCH
 	//a_tot-=old_a;
 	//a_tot+=new_a;
@@ -757,7 +757,7 @@ double System::sim(double duration, long int sampleTimes, bool verbose)
 
 		if((DEBUG_ACTIVE &SHOW_SIM) ){
 			//if (verbose)
-			cout<<"Try to Fire, Reaction:"<<  nextReaction->getName() <<" at time "<< current_time<< "  delta_t: " <<delta_t<<" atot: "<<a_tot<<"  randElement:"<< randElement<<endl;	//	mypause(100);
+		//	cout<<"Try to Fire, Reaction:"<<  nextReaction->getName() <<" at time "<< current_time<< "  delta_t: " <<delta_t<<" atot: "<<a_tot<<"  randElement:"<< randElement<<endl;	//	mypause(100);
 		}
 
 

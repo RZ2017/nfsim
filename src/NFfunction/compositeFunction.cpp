@@ -352,12 +352,15 @@ void CompositeFunction::prepareForSimulation(System *s)
 
 		//Define local function variables here...
 #ifdef RHS_FUNC  //Razi: This block is added to support RHS functions
-		if(RHS){
+	if(RHS){
+		//	this->refLfValues = new double[n_refLfs];
+			this->refLfValues[0]=1; //Ali not sure about 0 but it seems we only have one local funcion here
 			for(int f=0; f<this->n_refLfs; f++) {
-				p->DefineVar(refLfRefNames[f],0);
-				if (verbose)  cout<<"\tSet Local Func:"<<refLfRefNames[f] <<" Value:" << 0<<endl;
+
+				p->DefineVar(refLfRefNames[f],&refLfValues[f]);
+				if (verbose)  cout<<"\tSet Local Func:"<<refLfRefNames[f] <<" Value:" << refLfValues[f]<<endl;
 			}
-		}else
+		}else//run only for LHS functions
 #endif
 		//Razi: Applies to LHS functions
 		for(int f=0; f<this->n_refLfs; f++) {
@@ -620,5 +623,25 @@ double CompositeFunction::evaluateOnProduct(Molecule *mol, int scope, int evalua
 	if (verbose) cout<<"Final result when evaluating a RHS function is: "<< result<<endl;
 	return result;
 }
+double CompositeFunction::evaluateOnRHS(Molecule *mol, int scope, int evaluationType, bool averbose) {
+/*	p->GetConst();
+	p->GetVar();
+	mu::varmap_type variables = p->GetUsedVar();
+	cout << "Number: " << (int)variables.size() << "\n";
 
+	// Get the number of variables
+   mu::varmap_type::const_iterator item = variables.begin();
+
+	// Query the variables
+	for (; item!=variables.end(); ++item)
+	{
+	  cout << "Name: " << item->first << " Address: [0x" << item->second << "]\n";
+	}
+	//evaluate this function
+	cout<<refLfValues[0]<<endl;
+	cout<<p->GetExpr()<<endl;*/
+	double result = FuncFactory::Eval(p);
+	if (averbose) cout<<"Final result when evaluating a RHS function is: "<< result<<endl;
+	return result;
+}
 #endif

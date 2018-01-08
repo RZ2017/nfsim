@@ -1005,8 +1005,6 @@ bool TransformationSet::transform(MappingSet **mappingSets){
 #else
 bool TransformationSet::transform(MappingSet **mappingSets)
 {
-		cout<<"debugAli2"<<endl;
-cin.get();
 	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
 
 	/*
