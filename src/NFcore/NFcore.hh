@@ -1172,6 +1172,7 @@ namespace NFcore
 			MappingSet *ms;
 			MappingSet ** check_mappingSet;
 			int DORproductIndex; //the product with RHS function
+			double res=0;
 #endif
 			System * system;
 
