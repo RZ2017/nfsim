@@ -955,17 +955,25 @@ void Molecule::CopybreadthFirstSearch(Molecule *origM, Molecule * &copyM, list <
 
 				Molecule *neighbor = (*molIter)->getBondedMolecule(c);
 				Molecule *neighbor_copy = neighbor->getCopy();
+				if (neighbor->hasVisitedMolecule)
+				{
+				//	cout<<"Name4:"<<neighbor_copy->getMoleculeTypeName()<<endl;
 				cIndex1 = c;
 				cIndex2 = (*molIter)->getBondedMoleculeBindingSiteIndex(cIndex1);
-
-				if(neighbor_copy->hasVisitedBond[cIndex2] != true &&cM_copy -> hasVisitedBond[c] != true && (cM_copy)->isBindingSiteBonded(c) != true && (neighbor_copy)->isBindingSiteBonded(cIndex2) != true)
+				if(neighbor_copy != 0)
 				{
-					(*molIter)->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
-					neighbor_copy -> hasVisitedBond[cIndex2] = true;
-					cM_copy -> hasVisitedBond[c] = true;
+
+					if(neighbor_copy->hasVisitedBond[cIndex2] != true &&cM_copy -> hasVisitedBond[c] != true)// && (cM_copy)->isBindingSiteBonded(c) != true && (neighbor_copy)->isBindingSiteBonded(cIndex2) != true)
+					{
+						(*molIter)->bind(cM_copy, cIndex1, neighbor_copy, cIndex2); //Razi: make bonds for copy molecules
+						neighbor_copy -> hasVisitedBond[cIndex2] = true;
+						cM_copy -> hasVisitedBond[c] = true;
+					}
 				}
 			}
-		}
+			}
+
+			}
 	}
 	//cout<<"AAA-start while end"; mypause(-1);
 
