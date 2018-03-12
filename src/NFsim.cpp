@@ -76,6 +76,8 @@
  *
  *  -cb = turn on complex bookkeeping, see manual
  *
+ *  -co = Enable ring checking
+ *
  *  -gml [integer] = sets maximal number of molecules, per any MoleculeType, see manual
  *
  *  -nocslf = disable evaluation of Complex-Scoped Local Functions
@@ -337,16 +339,6 @@ int main(int argc, char *argv[])
     finish = clock();
     time = (double(finish)-double(start))/CLOCKS_PER_SEC;
     cout<<endl<<"done.  Total CPU time: "<< time << "s"<<endl<<endl;
-
-
-#ifdef RAZI_VER
-    //int tempvar; cin>>tempvar; //A.Razi added for test
-    //wait 2 seconds
-    cout<<"waiting 2 seconds ..."<<endl;
-    clock_t start_time = clock();
-    clock_t end_time = 2000 + start_time;
-    while(clock() != end_time);
-#endif
     return 0;
 }
 
@@ -644,6 +636,9 @@ void printHelp(string version)
 	cout<<"  -rnf [filename]   used to specify an rnf script to execute."<<endl;
 	cout<<""<<endl;
 	cout<<"  -o [filename]     used to specify the output file name."<<endl;
+	cout<<""<<endl;
+	cout<<"  -co               use this flag to tell NFsim to avoid  unbinding reaction"<<endl;
+	cout<<"                    which are connected through another conection"<<endl;
 	cout<<""<<endl;
 	cout<<"  -sim [time]       used to specify the length (in seconds) of a simulation"<<endl;
 	cout<<"                    when running an xml file.  Fractional seconds are valid."<<endl;

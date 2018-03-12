@@ -43,28 +43,35 @@ MappingSet::MappingSet(unsigned int id, vector <Transformation *> &transformatio
 MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
 
 	this->id = ms->id;
-	if (Mols.size() < ms->n_mappings){
-			cerr<<"MappingSet Error==> Inconsistency between the number of number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
-			ms->printDetails(); exit(0);
-	}
-
+	// if (Mols.size() < ms->n_mappings){
+	// 		cerr<<"MappingSet Error==> Inconsistency between the number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
+	// 		ms->printDetails(); exit(0);
+	// }
+	new Mapping *[ms->n_mappings];
+	int mapping_counter=0;
 	if (ms->n_mappings > 1){
-		cerr<<"MappingSet Error==> More than one reactant for each mapping set os not yet developed. Number of reactants:"<<ms->n_mappings<<"!!!";
-		ms->printDetails(); exit(0);
+		for(unsigned int m=0; m<ms->n_mappings; m++) {
+				int mtype = ms->getMappingType(m);
+				if (mtype != 8 && mtype != 9 && mtype != 10)
+				{
+					mapping_counter++;
+		}
 	}
-
-	this->n_mappings = ms->n_mappings;
+	}
+	this->n_mappings = mapping_counter;//was ms->n_mappings;
 
 	this->mappings = new Mapping *[n_mappings];
 	this->isSpeciesDeletion=ms->isSpeciesDeletion;
 	this->clonedMappingSet=ms->clonedMappingSet;
 
-	Molecule * m;
-	for(unsigned int t=0; t<n_mappings; t++) {
-
-		m = Mols.front();Mols.pop_front(); //Razi: code for list
-		//m = Mols[t];    //Razi: code for vector
-		mappings[t] = new Mapping(ms->mappings[t], m);
+	Molecule * mC;
+	int counter=0;
+	mC = Mols.front();Mols.pop_front(); //Razi: code for list
+	for(unsigned int m=0; m<ms->n_mappings; m++) {
+		if(ms->mappings[m]->getType() != 8 && ms->mappings[m]->getType() != 9 && ms->mappings[m]->getType() != 10){
+			mappings[counter] = new Mapping(ms->mappings[m], mC);
+			counter++;
+		}
 	}
 }
 #endif
@@ -138,7 +145,10 @@ int MappingSet::getComplexID() const
 	return mappings[0]->getMolecule()->getComplexID();
 }
 
-
+int MappingSet::getMappingType(int index)  const
+{
+	return mappings[index]->getType();
+}
 int MappingSet::getPopulation() const
 {
 	return mappings[0]->getMolecule()->getPopulation();

@@ -667,7 +667,11 @@ bool ReactionClass::checkReaction()   //clone reactants
 	vector<list <Molecule *> >  AllcopyMs(10, list <Molecule *>(100)); //at most 10 reactants per reaction rule
 	vector<list <Molecule *> >  AllorigMs(10, list <Molecule *>(100));
 	Molecule * copyM;
-	int maxDepth=10;
+		int maxDepth;
+	if( this->traversalLimit!=ReactionClass::NO_LIMIT)
+		maxDepth = this->traversalLimit;
+	else
+		maxDepth= 20;
 	bool result=true;
 
 
@@ -697,8 +701,9 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 		//find all other connected molecules
 		origMs.clear(); copyMs.clear();
-		origM->unpointbreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
+
 		origM->CopybreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
+		origM->unpointbreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
 		start_id=start_id+copyMs.size();
 
 
@@ -742,10 +747,10 @@ bool ReactionClass::checkReaction()   //clone reactants
 		//in this block, check if the products are disjoint molecules
 		if (check_products){
 			result = this->transformationSet->transform(check_mappingSet, true, true);  //apply the transformation on test molecules
-			if ((verbose |1) && (!result)){
+			if ((verbose) && (!result)){
 				cout<<"The reaction does not pass the output molecularity check. Perhaps an alternative connection exist after unbinfding molecules...\n";
 			}
-			if ((verbose |1) && (result)){
+			if ((verbose) && (result)){
 				cout<<"The reaction passed the output molecularity check.\n";
 			}
 
