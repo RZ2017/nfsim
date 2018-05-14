@@ -191,10 +191,10 @@ ReactionClass * NFtest_transcription::createReactionRNAdegrades(MoleculeType *mo
 	TransformationSet *ts = new TransformationSet(templates);
 	ts->addDeleteMolecule(rnaTemp,0);
 	ts->finalize();
-
+bool checkProductsts=false;
 	//Now we can create our reaction.  This is simple: just give it a name, a rate, and the transformation
 	//set that you just created.  It will take care of the rest!
-	ReactionClass *r = new BasicRxnClass("RNA_degradation",rate,"",ts,molRNA->getSystem());
+	ReactionClass *r = new BasicRxnClass("RNA_degradation",rate,"",checkProductsts,ts,molRNA->getSystem());
 	return r;
 }
 
@@ -213,8 +213,8 @@ ReactionClass * NFtest_transcription::createReactionRNAtranscribed(MoleculeType 
 	SpeciesCreator *sc = new SpeciesCreator(newProduct);
 	ts->addAddSpecies(sc);
 	ts->finalize();
-
-	ReactionClass *r = new BasicRxnClass("RNA_transcription",rate,"",ts,molRNA->getSystem());
+	bool checkProductsts=false;
+	ReactionClass *r = new BasicRxnClass("RNA_transcription",rate,"",checkProductsts,ts,molRNA->getSystem());
 	return r;
 }
 

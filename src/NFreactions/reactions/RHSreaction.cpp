@@ -14,10 +14,11 @@ RHSRxnClass::RHSRxnClass(   //Razi: this version supports RHS functions
 		string name,
 		double baseRate,
 		string baseRateName,
+		bool checkProducts,
 		TransformationSet *transformationSet,
 		CompositeFunction *function,
 		vector <string> &lfArgumentPointerNameList, System *s) :
-	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
+	ReactionClass(name,baseRate,baseRateName,checkProducts,transformationSet,s)
 {
 	bool verbose=false;
 	if (DEBUG_ACTIVE & CREATE_REACTION)
@@ -26,6 +27,7 @@ RHSRxnClass::RHSRxnClass(   //Razi: this version supports RHS functions
 	if (verbose) {cout<<"\n\tRHS RXN:"<<name<<" with RHS composite functions:"<< function->getName() << "and "<< n_reactants <<" reactants is created.\n"; mypause(-1);}
 
 	this->reactionType = RHS_RXN;
+	this->checkProducts = checkProducts;
 	reactantLists = new ReactantList *[n_reactants];
 	check_mappingSet = new MappingSet *[n_reactants];
 

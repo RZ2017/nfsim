@@ -26,6 +26,7 @@ namespace NFcore
 					string name,
 					double baseRate,
 					string baseRateName,
+					bool checkProducts,
 					TransformationSet *transformationSet,
 					CompositeFunction *function,
 					vector <string> &lfArgumentPointerNameList,
@@ -108,7 +109,7 @@ namespace NFcore
 
 	class BasicRxnClass : public ReactionClass {
 		public:
-			BasicRxnClass(string name, double baseRate, string baseRateName, TransformationSet *transformationSet, System *s);
+			BasicRxnClass(string name, double baseRate, string baseRateName, bool checkProducts, TransformationSet *transformationSet, System *s);
 			virtual ~BasicRxnClass();
 
 			virtual void init();
@@ -158,7 +159,7 @@ namespace NFcore
 	class MMRxnClass : public BasicRxnClass {
 
 		public:
-			MMRxnClass(string name, double kcat, double Km, TransformationSet *transformationSet, System *s);
+			MMRxnClass(string name, double kcat, double Km, bool checkProducts,TransformationSet *transformationSet, System *s);
 			virtual ~MMRxnClass();
 
 			virtual double update_a();
@@ -177,6 +178,7 @@ namespace NFcore
 					string name,
 					double baseRate,
 					string baseRateName,
+					bool checkProducts,
 					TransformationSet *transformationSet,
 					CompositeFunction *function,
 					vector <string> &lfArgumentPointerNameList,

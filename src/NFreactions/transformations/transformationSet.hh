@@ -170,7 +170,8 @@ namespace NFcore
 			*/
 
 #ifdef RHS_FUNC //Razi added to support RHS functions
-			bool transform(MappingSet **mappingSets, bool testmode, bool check_ring);
+			bool transform(MappingSet **mappingSets, bool testmode, bool check_ring, bool conectedCheck);
+
 #endif
 			bool transform(MappingSet **mappingSets);
 
@@ -348,6 +349,8 @@ namespace NFcore
 			unsigned int getNproducts() const { return n_productTemplates;};
 
 			bool includeRHSFunc; //=1 if any RHS function is included
+			TemplateMolecule ** getproductTemplates() {return productTemplates;};
+			int getn_productTemplates() const {return n_productTemplates; };
 #endif
 
 

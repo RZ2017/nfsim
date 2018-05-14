@@ -12,7 +12,7 @@ using namespace NFcore;
 
 
 FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, TransformationSet *transformationSet, System *s) :
-	BasicRxnClass(name,1,"",transformationSet,s)
+	BasicRxnClass(name,1,"",checkProducts,transformationSet,s)
 {
 	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with global function:"<< gf->getNiceName() <<" is created.\n";  mypause(-1);}
 	this->cf=0;
@@ -31,7 +31,7 @@ FunctionalRxnClass::FunctionalRxnClass(string name, GlobalFunction *gf, Transfor
 }
 
 FunctionalRxnClass::FunctionalRxnClass(string name, CompositeFunction *cf, TransformationSet *transformationSet, System *s) :
-	BasicRxnClass(name,1, "", transformationSet,s)
+	BasicRxnClass(name,1, "",checkProducts, transformationSet,s)
 {
 	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tFunctional RXN:"<<name<<" with composite function:"<< cf->getName() <<" is created.\n";  mypause(-1);}
 	this->gf=0;
@@ -143,8 +143,8 @@ void FunctionalRxnClass::printDetails() const {
 
 
 
-MMRxnClass::MMRxnClass(string name, double kcat, double Km, TransformationSet *transformationSet,System *s) :
-	BasicRxnClass(name,1,"",transformationSet,s)
+MMRxnClass::MMRxnClass(string name, double kcat, double Km,bool checkProducts, TransformationSet *transformationSet,System *s) :
+	BasicRxnClass(name,1,"",checkProducts,transformationSet,s)
 {
 	if ((DEBUG_ACTIVE) & (SHOW_FIRE | CREATE_REACTION)) {cout<<"\n\tMM-RXN:"<<name<<" is created.\n";  mypause(-1);}
 
@@ -185,12 +185,8 @@ void MMRxnClass::printDetails() const {
 
 
 
-
-
-
-
-BasicRxnClass::BasicRxnClass(string name, double baseRate, string baseRateName, TransformationSet *transformationSet, System *s) :
-	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
+BasicRxnClass::BasicRxnClass(string name, double baseRate, string baseRateName, bool checkProducts, TransformationSet *transformationSet, System *s) :
+	ReactionClass(name,baseRate,baseRateName, checkProducts,transformationSet,s)
 {
 	if ((DEBUG_ACTIVE) & (CREATE_REACTION)) {cout<<"\n\tBasic RXN:"<<name<<" with base rate:"<< baseRate <<" is created.\n";  mypause(-1);}
 	this->reactionType = BASIC_RXN;  //set as normal reaction here, but deriving reaction classes can change this
@@ -263,11 +259,11 @@ int BasicRxnClass::checkForEquality(Molecule *m, MappingSet* ms, int rxnIndex, R
 bool BasicRxnClass::tryToAdd(Molecule *m, unsigned int reactantPos)
 {
 	//First a bit of error checking, that you should skip unless we are debugging...
-	//	if(reactantPos<0 || reactantPos>=n_reactants || m==NULL)
-	//	{
-	//		cout<<"Error adding molecule to reaction!!  Invalid molecule or reactant position given.  Quitting."<<endl;
-	//		exit(1);
-	//	}
+		if(reactantPos<0 || reactantPos>=n_reactants || m==NULL)
+		{
+			cout<<"Error adding molecule to reaction!!  Invalid molecule or reactant position given.  Quitting."<<endl;
+			exit(1);
+		}
 
 	//Get the specified reactantList
 	rl = reactantLists[reactantPos];

@@ -1032,7 +1032,7 @@ bool NFinput::initReactionRules(
 			//First, scan the reaction rule for possible symmetries!!!
 			map <string, component> symComps;
 			map <string, component> symRxnCenter;
-
+			bool checkProducts=true;
 			if(!FindReactionRuleSymmetry(pRxnRule, s,
 									parameter,
 									allowedStates,
@@ -1062,6 +1062,7 @@ bool NFinput::initReactionRules(
 
 				//Grab the name of the rule
 				string rxnName;
+				string ringcheck="_noring";
 				if(!pRxnRule->Attribute("id")) {
 					cerr<<"ReactionRule tag without a valid 'id' attribute.  Quiting"<<endl;
 					return false;
@@ -1069,6 +1070,8 @@ bool NFinput::initReactionRules(
 					rxnName = pRxnRule->Attribute("id");
 					if(pRxnRule->Attribute("name")) {
 						rxnName = pRxnRule->Attribute("name");
+						if(strstr(rxnName.c_str(),ringcheck.c_str()))
+							checkProducts=false;
 					}
 
 					if(permutations.size()>1) {
@@ -1909,7 +1912,7 @@ bool NFinput::initReactionRules(
 							}
 						}
 
-						r = new BasicRxnClass(rxnName,0,"",ts,s);
+						r = new BasicRxnClass(rxnName,0,"",checkProducts,ts,s);
 
 
 
@@ -2117,10 +2120,10 @@ bool NFinput::initReactionRules(
 								}
 #ifdef RHS_FUNC //Razi added to support RHS functions
 								if(ts->includeRHSFunc)
-									r=new RHSRxnClass(rxnName,1,"",ts,cf,funcArgs,s);
+									r=new RHSRxnClass(rxnName,1,"",checkProducts,ts,cf,funcArgs,s);
 								else
 #endif
-									r=new DORRxnClass(rxnName,1,"",ts,cf,funcArgs,s);
+									r=new DORRxnClass(rxnName,1,"",checkProducts,ts,cf,funcArgs,s);
 								if (show_flag){cout<<"\n ----------------------------------------A4-----------------------------------------------\n\n";s->printAllMoleculeTypes(); mypause(10);} //debug, later del
 							}
 						}
@@ -2333,7 +2336,7 @@ bool NFinput::initReactionRules(
 
 							//Finally, we can make the actual reaction
 							ts->finalize();
-							r = new MMRxnClass(rxnName,kcat,Km,ts,s);
+							r = new MMRxnClass(rxnName,kcat,Km,checkProducts,ts,s);
 							
 						}
 					}

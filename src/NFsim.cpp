@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	bool parsed = false;
 	bool verbose = false;
 #ifdef RHS_FUNC  //razi added to check reaction output products
-	bool check_products = false;
+	bool check_products = true;
 #endif
 	map<string,string> argMap;
 	if(NFinput::parseArguments(argc, const_cast<const char**>(argv), argMap))
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 		//First, find the arguments that we might use in any situation
 		if(argMap.find("co")!=argMap.end()) {
 			cout<<"reaction outputs will be checked to avoid potential rings.\n";
-			check_products = true;
+			check_products = false;
 		}
 
 		if(argMap.find("seed")!= argMap.end()) {

@@ -1073,6 +1073,203 @@ bool TemplateMolecule::isSymMapValid()
 
 
 
+bool TemplateMolecule::compareConnected(Molecule *m, MappingSet *ms)
+{
+
+	bool result = true;
+
+
+	//Check connected-to molecules
+	if(n_connectedTo>0) {
+		vector<bool> connectedToCheck(n_connectedTo+1, false);// this one also includes the actual molecule
+		vector<bool> copyConnectedToCheck(n_connectedTo+1, false);
+		vector <MappingSet *> lastMappingSets;
+		lastMappingSets.push_back(ms);
+
+		list <Molecule *> molList;
+		list <Molecule *>::iterator molIter;
+		bool hasTraversed = false;
+		m->traverseBondedNeighborhood(molList,ReactionClass::NO_LIMIT);
+		bool actualMatched = false;
+		int n_matched = 0;
+		int molListSize = molList.size();
+		int i = -1;
+		vector<bool>  molFlag(molListSize,false);
+		list <Molecule *> matchedMolList;
+		list <Molecule *> copyMolList;
+		list <Molecule *>::iterator matchedMolIter;
+
+		//the case A().A().B() need to be checked
+		//connectedTo last element is correspond to the actual molecule template and the rest related to the connected molecule
+		for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+					//Let's check the actual molecule:
+
+			i++;
+					if((*molIter)->connectedCheck==true) continue;
+					(*molIter)->connectedCheck = true;
+					if((*molIter)->getMoleculeType()!=this->moleculeType) {
+						(*molIter)->connectedCheck = false;
+				//		connectedToCheck[n_connectedTo] = false;
+						continue;
+					}
+					//Check all the basic components first to get them out of the way
+					//First check that all of our states match
+					for(int c=0; c<n_compStateConstraint; c++) {
+						if((*molIter)->getComponentState(compStateConstraint_Comp[c]) != compStateConstraint_Constraint[c]) {
+							(*molIter)->connectedCheck = false;
+					//		connectedToCheck[n_connectedTo] = false;
+							continue;
+						}
+					}
+					//Check that all of our exclusions are indeed not present (for state!=value checks)
+					for(int c=0; c<n_compStateExclusion; c++) {
+						if((*molIter)->getComponentState(compStateExclusion_Comp[c]) == compStateExclusion_Exclusion[c]) {
+							(*molIter)->connectedCheck = false;
+						//	connectedToCheck[n_connectedTo] = false;
+							continue;
+						}
+					}
+					//Make sure binding sites that are open / occupied are
+					for(int c=0; c<n_emptyComps; c++) {
+						if(!(*molIter)->isBindingSiteOpen(emptyComps[c])) {
+							(*molIter)->connectedCheck = false;
+							//connectedToCheck[n_connectedTo] = false;
+							continue;
+						}
+					}
+					for(int c=0; c<n_occupiedComps; c++) {
+						if(!(*molIter)->isBindingSiteBonded(occupiedComps[c])) {
+							(*molIter)->connectedCheck = false;
+							//connectedToCheck[n_connectedTo] = false;
+							continue;
+						}
+					}
+					if((*molIter)->connectedCheck)
+					{
+						if(actualMatched)
+						{
+							n_matched++;
+							//cout<<"error the molecule is already matched with another one"<<endl;
+						//	exit(0);
+						}
+						matchedMolList.push_back(*molIter);
+					//	molFlag(i)=true;
+						actualMatched=true;
+						connectedToCheck[n_connectedTo]=true;
+					}
+
+		}
+
+
+		copyMolList = molList;
+		copyConnectedToCheck = connectedToCheck;
+// if the actual matched all of the connected to has be match as well but it is possible that the actual molecule is matched to aconnected to min the tempelate so down the road we need to check all of them are matched
+
+		if(actualMatched)
+		{
+			for(matchedMolIter=matchedMolList.begin(); matchedMolIter!=matchedMolList.end(); matchedMolIter++)
+			{
+				molList = copyMolList;
+				connectedToCheck = copyConnectedToCheck;
+				for(int cTo=0; cTo<this->n_connectedTo; cTo++) {
+
+			for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+				bool canMatch=true;
+						//Let's check the actual molecule:
+				//if (!(*molIter)->connectedCheck && )
+				if ((*matchedMolIter)->getUniqueID()!=(*molIter)->getUniqueID())
+				{
+						////////////////////////////////////////////now lets check the connected to:
+						if((*molIter)->getMoleculeType()!=connectedTo[cTo]->moleculeType) {
+							(*molIter)->connectedCheck = false;
+						//	connectedToCheck[cTo] = false;
+							canMatch=false;
+							continue;
+						}
+
+						//cout<<"3!"<<endl;
+						//Check all the basic components first to get them out of the way
+						//First check that all of our states match
+						for(int c=0; c<n_compStateConstraint; c++) {
+							if((*molIter)->getComponentState(compStateConstraint_Comp[c]) != connectedTo[cTo]->compStateConstraint_Constraint[c]) {
+								(*molIter)->connectedCheck = false;
+							//	connectedToCheck[cTo] = false;
+								canMatch=false;
+								continue;
+							}
+						}
+						//Check that all of our exclusions are indeed not present (for state!=value checks)
+						for(int c=0; c<n_compStateExclusion; c++) {
+							if((*molIter)->getComponentState(compStateExclusion_Comp[c]) == connectedTo[cTo]->compStateExclusion_Exclusion[c]) {
+								(*molIter)->connectedCheck = false;
+							//	connectedToCheck[cTo] = false;
+								canMatch=false;
+								continue;
+							}
+						}
+						//Make sure binding sites that are open / occupied are
+						for(int c=0; c<n_emptyComps; c++) {
+							if(!(*molIter)->isBindingSiteOpen(emptyComps[c])) {
+								(*molIter)->connectedCheck = false;
+							//	connectedToCheck[cTo] = false;
+								canMatch=false;
+								continue;
+							}
+						}
+						for(int c=0; c<n_occupiedComps; c++) {
+							if(!(*molIter)->isBindingSiteBonded(occupiedComps[c])) {
+								(*molIter)->connectedCheck = false;
+							//	connectedToCheck[cTo] = false;
+								canMatch=false;
+								continue;
+							}
+						}
+
+						if(canMatch)
+						{
+//							if(actualMatched)
+//							{
+//								cout<<"error the molecule is already matched with another one"<<endl;
+//								exit(0);
+//							}
+							(*molIter)->connectedCheck =true;
+							connectedToCheck[cTo]=true;
+						}
+			}
+			}
+		}
+
+//				for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+//							if((*molIter)->connectedCheck==false)
+//								{
+//											result =  false;
+//								}
+//
+//						}
+
+				for(int cTo=0; cTo<this->n_connectedTo+1; cTo++) {
+					if(connectedToCheck[cTo]==false)
+					{
+
+						result = false;
+					}
+				}
+
+			}
+		}
+		else
+			result = false;
+
+
+		for(molIter=molList.begin(); molIter!=molList.end(); molIter++) {
+				(*molIter)->connectedCheck=false;
+
+			}
+
+		return result;
+}
+	return true;
+}
 
 bool TemplateMolecule::compare(Molecule *m, ReactantContainer *rc, MappingSet *ms, bool holdMolClearToEnd, vector<MappingSet*> *symmetricMappingSet)
 {

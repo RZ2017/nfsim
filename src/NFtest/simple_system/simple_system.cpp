@@ -276,7 +276,8 @@ ReactionClass * NFtest_ss::createReactionXDephos(MoleculeType *molX, double rate
 	//Now we can create our reaction.  This is simple: just give it a name, a rate, the parameter name
 	//of the rate (which is the empty string here, because we don't have any parameters in the system
 	//declared) and the transformationset that you just created.  It will take care of the rest!
-	ReactionClass *r = new BasicRxnClass("X_dephos",rate,"",ts,molX->getSystem());
+	bool checkProductsts=false;
+	ReactionClass *r = new BasicRxnClass("X_dephos",rate,"",checkProductsts,ts,molX->getSystem());
 	return r;
 }
 
@@ -313,9 +314,9 @@ ReactionClass * NFtest_ss::createReactionXYbind(MoleculeType *molX,MoleculeType 
 	TransformationSet *ts = new TransformationSet(templates);
 	ts->addBindingTransform(xTemp,"y", yTemp, "x");
 	ts->finalize();
-
+	bool checkProductsts=false;
 	//Create and return the reaction!
-	ReactionClass *r = new BasicRxnClass("Y_bind_X",rate,"",ts,molX->getSystem());
+	ReactionClass *r = new BasicRxnClass("Y_bind_X",rate,"",checkProductsts,ts,molX->getSystem());
 	return r;
 }
 
@@ -343,9 +344,9 @@ ReactionClass * NFtest_ss::createReactionXYunbind(MoleculeType *molX, MoleculeTy
 	TransformationSet *ts = new TransformationSet(templates);
 	ts->addUnbindingTransform(xTemp,"y",yTemp,"y");
 	ts->finalize();
-
+	bool checkProductsts=false;
 	//Create the reaction in the usual way.
-	ReactionClass *r = new BasicRxnClass("Y_unbind_X",rate,"",ts,molX->getSystem());
+	ReactionClass *r = new BasicRxnClass("Y_unbind_X",rate,"",checkProductsts,ts,molX->getSystem());
 	return r;
 }
 
@@ -370,9 +371,9 @@ ReactionClass * NFtest_ss::createReactionYphosX(MoleculeType *molX, MoleculeType
 	ts->addUnbindingTransform(xTemp,"y",yTemp,"x");
 	ts->addStateChangeTransform(xTemp,"p","Phos");
 	ts->finalize();
-
+	bool checkProductsts=false;
 	//Return the Reaction.
-	ReactionClass *r = new BasicRxnClass("Y_phos_X",rate, "",ts,molX->getSystem());
+	ReactionClass *r = new BasicRxnClass("Y_phos_X",rate, "",checkProductsts,ts,molX->getSystem());
 	return r;
 }
 

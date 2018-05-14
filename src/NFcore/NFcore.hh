@@ -955,6 +955,7 @@ namespace NFcore
 			/* used for traversing a molecule complex */
 			bool hasVisitedMolecule;
 			bool * hasVisitedBond;
+			bool connectedCheck = false;
 			TemplateMolecule *isMatchedTo;
 
 			/* used when reevaluating local functions */
@@ -1090,7 +1091,7 @@ namespace NFcore
 
 
 
-			ReactionClass(string name, double rate, string baseRateParameterName, TransformationSet *transformationSet, System *s);
+			ReactionClass(string name, double rate, string baseRateParameterName,bool checkProducts, TransformationSet *transformationSet, System *s);
 			virtual ~ReactionClass();
 
 			int getNumOfReactants() const { return n_reactants; };
@@ -1166,6 +1167,8 @@ namespace NFcore
 			int reactionType;
 			unsigned int n_reactants;
 			unsigned int n_mappingsets;
+			//Ali added for reaction-wise ring check!
+			bool checkProducts;
 
 #ifdef RHS_FUNC //Razi added to support RHS functions
 			CompositeFunction *cfo;

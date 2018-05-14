@@ -9,7 +9,7 @@ using namespace NFcore;
 
 
 
-ReactionClass::ReactionClass(string name, double baseRate, string baseRateParameterName, TransformationSet *transformationSet, System *s)
+ReactionClass::ReactionClass(string name, double baseRate, string baseRateParameterName,bool checkProducts, TransformationSet *transformationSet, System *s)
 {
 	bool verbose=false;
 	if (DEBUG_ACTIVE & CREATE_REACTION)
@@ -30,7 +30,7 @@ ReactionClass::ReactionClass(string name, double baseRate, string baseRateParame
 	this->a = 0;
 	this->traversalLimit = ReactionClass::NO_LIMIT;
 	this->transformationSet = transformationSet;
-
+	this->checkProducts = checkProducts;
 
 	//Set up the template molecules from the transformationSet
 	this->n_reactants   = transformationSet->getNreactants();
@@ -652,10 +652,20 @@ bool ReactionClass::checkReaction()   //clone reactants
 	//verbose = false;
 	if (verbose) cout<<"RxnClass:: checkReaction() is called.\n";
 
-
+	// Ali: Lets check the disjoint connection!!
+	n_productTemplates = this->transformationSet->getn_productTemplates();
+	TemplateMolecule ** productTemplates = this->transformationSet->getproductTemplates();
+	bool conectedCheck=false;
+	for(int i=0;i<n_productTemplates;i++)
+	{
+		if(productTemplates[i]->getN_connectedTo()>0)
+		{
+			conectedCheck =true;
+		}
+	}
 
 	bool check_products =system->get_check_products();
-	if ((this->reactionType != RHS_RXN) && (!check_products)){
+	if ((this->reactionType != RHS_RXN) && (!check_products) && (!conectedCheck)){
 		//cout<<"skip product checking. neither RHS function exist, nor ring check is active.\n";
 		return true;
 	}
@@ -684,7 +694,13 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 
 
-	if(verbose){mappingSet[0]->get(0)->getMolecule()->printDetails();mappingSet[1]->get(0)->getMolecule()->printDetails();}
+	if(verbose){
+		mappingSet[0]->get(0)->getMolecule()->printDetails();
+		if(n_mappingsets>1)
+		{
+			mappingSet[1]->get(0)->getMolecule()->printDetails();
+		}
+	}
 
 	//razi: lets first copy all reactants and their connected molecules
 	for(unsigned int k=0; k<n_reactants; k++) {
@@ -743,22 +759,23 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 
 
-
+		//Ali:ring check is within the  transform
 		//in this block, check if the products are disjoint molecules
-		if (check_products){
-			result = this->transformationSet->transform(check_mappingSet, true, true);  //apply the transformation on test molecules
-			if ((verbose) && (!result)){
-				cout<<"The reaction does not pass the output molecularity check. Perhaps an alternative connection exist after unbinfding molecules...\n";
-			}
-			if ((verbose) && (result)){
-				cout<<"The reaction passed the output molecularity check.\n";
-			}
+//		if (check_products){
+//			result = this->transformationSet->transform(check_mappingSet, true, true,conectedCheck);  //apply the transformation on test molecules
+//			if ((verbose |1) && (!result)){
+//				cout<<"The reaction does not pass the output molecularity check. Perhaps an alternative connection exist after unbinfding molecules...\n";
+//			}
+//			if ((verbose |1) && (result)){
+//				cout<<"The reaction passed the output molecularity check.\n";
+//			}
+//
+//		}else{
+//			//apply the reaction to the test molecules
+//			this->transformationSet->transform(check_mappingSet, true, false,conectedCheck);  //apply the transformation on test molecules
+//		}
 
-		}else{
-			//apply the reaction to the test molecules
-			this->transformationSet->transform(check_mappingSet, true, false);  //apply the transformation on test molecules
-		}
-
+		result = this->transformationSet->transform(check_mappingSet, true, this->checkProducts&&check_products,conectedCheck);  //apply the transformation on test molecules
 
 
 

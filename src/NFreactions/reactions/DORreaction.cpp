@@ -16,10 +16,11 @@ DORRxnClass::DORRxnClass(
 		string name,
 		double baseRate,
 		string baseRateName,
+		bool checkProducts,
 		TransformationSet *transformationSet,
 		CompositeFunction *function,
 		vector <string> &lfArgumentPointerNameList, System *s) :
-	ReactionClass(name,baseRate,baseRateName,transformationSet,s)
+	ReactionClass(name,baseRate,baseRateName,checkProducts,transformationSet,s)
 {
 	if ((DEBUG_ACTIVE) & CREATE_REACTION) {cout<<"\n\tDOR RXN:"<<name<<" with composite function:"<< function->getName() <<" is created.\n";  mypause(-1);}
 
@@ -732,7 +733,7 @@ DOR2RxnClass::DOR2RxnClass(
 		vector <string> &lfArgumentPointerNameList1,
 		vector <string> &lfArgumentPointerNameList2,
 		System *s
-	) : ReactionClass(name,baseRate,baseRateName,transformationSet,s)
+	) : ReactionClass(name,baseRate,baseRateName, checkProducts,transformationSet,s)
 {
 
 	if (DEBUG_ACTIVE & CREATE_REACTION) {cout<<"\n\tDOR2 RXN:"<<name<<" with composite functions:"<< function1->getName() << " and " << function2->getName()<< " is created.\n"; mypause(-1);}
