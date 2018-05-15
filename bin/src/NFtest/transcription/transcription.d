@@ -1,149 +1,137 @@
 src/NFtest/transcription/transcription.d: \
- ../src/NFtest/transcription/transcription.cpp \
- ../src/NFtest/transcription/transcription.hh \
- ../src/NFtest/transcription/../../NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFscheduler/NFstream.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantContainer.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantList.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantTree.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/transformationSet.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/transformation.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/moleculeCreator.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/speciesCreator.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mapping.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mappingSet.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mappingGenerator.hh \
- ../src/NFtest/transcription/../../NFcore/moleculeLists/moleculeList.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/NFfunction.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParser.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBase.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserDef.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserFixes.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserStack.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserError.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserToken.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserCallback.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserTokenReader.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBytecode.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFoutput/NFoutput.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh \
- ../src/NFtest/transcription/../../NFcore/reactionSelector/reactionSelector.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- ../src/NFtest/transcription/../../NFcore/templateMolecule.hh \
- ../src/NFtest/transcription/../../NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- ../src/NFtest/transcription/../../NFcore/observable.hh \
- ../src/NFtest/transcription/../../NFreactions/NFreactions.hh \
- ../src/NFtest/transcription/../../NFreactions/reactions/reaction.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- ../src/NFtest/transcription/../../NFutil/setting.hh
+  ../src/NFtest/transcription/transcription.cpp \
+  ../src/NFtest/transcription/transcription.hh \
+  ../src/NFtest/transcription/../../NFcore/NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFscheduler/NFstream.h \
+  ../src/NFtest/transcription/../../NFcore/../NFutil/NFutil.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/NFreactions.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/../NFcore/NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantContainer.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/../NFreactions.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantList.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantTree.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/transformationSet.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/../NFreactions.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/../../NFutil/setting.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/transformation.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/moleculeCreator.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/speciesCreator.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mapping.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/../NFreactions.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/../../NFutil/setting.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mappingSet.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mappingGenerator.hh \
+  ../src/NFtest/transcription/../../NFcore/moleculeLists/moleculeList.hh \
+  ../src/NFtest/transcription/../../NFcore/moleculeLists/../NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/NFfunction.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParser.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserBase.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserDef.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserFixes.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserStack.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserError.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserToken.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserCallback.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserTokenReader.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserBytecode.h \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/../NFcore/NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFfunction/../NFutil/setting.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFoutput/NFoutput.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFoutput/../NFcore/NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/reactionSelector/reactionSelector.hh \
+  ../src/NFtest/transcription/../../NFcore/reactionSelector/../NFcore.hh \
+  ../src/NFtest/transcription/../../NFcore/templateMolecule.hh \
+  ../src/NFtest/transcription/../../NFcore/../NFutil/setting.hh \
+  ../src/NFtest/transcription/../../NFcore/observable.hh \
+  ../src/NFtest/transcription/../../NFreactions/reactions/reaction.hh \
+  ../src/NFtest/transcription/../../NFutil/setting.hh
 
 ../src/NFtest/transcription/transcription.hh:
 
 ../src/NFtest/transcription/../../NFcore/NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFscheduler/NFstream.h:
+../src/NFtest/transcription/../../NFcore/../NFscheduler/NFstream.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh:
+../src/NFtest/transcription/../../NFcore/../NFutil/NFutil.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/NFreactions.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/../NFcore/NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantContainer.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantContainer.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/../NFreactions.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantList.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantList.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/reactantLists/reactantTree.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/reactantLists/reactantTree.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/transformationSet.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/transformationSet.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/../NFreactions.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/../../NFutil/setting.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/transformation.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/transformation.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/moleculeCreator.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/moleculeCreator.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/transformations/speciesCreator.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/transformations/speciesCreator.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mapping.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mapping.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/../NFreactions.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/../../NFutil/setting.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mappingSet.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mappingSet.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/mappings/mappingGenerator.hh:
+../src/NFtest/transcription/../../NFcore/../NFreactions/mappings/mappingGenerator.hh:
 
 ../src/NFtest/transcription/../../NFcore/moleculeLists/moleculeList.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFtest/transcription/../../NFcore/moleculeLists/../NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/NFfunction.hh:
+../src/NFtest/transcription/../../NFcore/../NFfunction/NFfunction.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParser.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParser.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBase.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserBase.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserDef.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserDef.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserFixes.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserFixes.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserStack.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserStack.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserError.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserError.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserToken.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserToken.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserCallback.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserCallback.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserTokenReader.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserTokenReader.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBytecode.h:
+../src/NFtest/transcription/../../NFcore/../NFfunction/muParser/muParserBytecode.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFtest/transcription/../../NFcore/../NFfunction/../NFcore/NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFtest/transcription/../../NFcore/../NFfunction/../NFutil/setting.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFoutput/NFoutput.hh:
+../src/NFtest/transcription/../../NFcore/../NFoutput/NFoutput.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh:
+../src/NFtest/transcription/../../NFcore/../NFoutput/../NFcore/NFcore.hh:
 
 ../src/NFtest/transcription/../../NFcore/reactionSelector/reactionSelector.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFtest/transcription/../../NFcore/reactionSelector/../NFcore.hh:
 
 ../src/NFtest/transcription/../../NFcore/templateMolecule.hh:
 
-../src/NFtest/transcription/../../NFcore/NFcore.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFtest/transcription/../../NFcore/../NFutil/setting.hh:
 
 ../src/NFtest/transcription/../../NFcore/observable.hh:
 
-../src/NFtest/transcription/../../NFreactions/NFreactions.hh:
-
 ../src/NFtest/transcription/../../NFreactions/reactions/reaction.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
 
 ../src/NFtest/transcription/../../NFutil/setting.hh:

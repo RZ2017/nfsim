@@ -1,51 +1,47 @@
 src/NFreactions/mappings/mappingSet.d: \
- ../src/NFreactions/mappings/mappingSet.cpp \
- ../src/NFreactions/mappings/mappingSet.hh \
- ../src/NFreactions/mappings/../NFreactions.hh \
- ../src/NFreactions/mappings/../../NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFscheduler/NFstream.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- ../src/NFreactions/mappings/../../NFcore/moleculeLists/moleculeList.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/NFfunction.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParser.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBase.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserDef.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserFixes.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserStack.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserError.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserToken.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserCallback.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserTokenReader.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBytecode.h \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFoutput/NFoutput.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh \
- ../src/NFreactions/mappings/../../NFcore/reactionSelector/reactionSelector.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh \
- ../src/NFreactions/mappings/../../NFcore/templateMolecule.hh \
- ../src/NFreactions/mappings/../../NFcore/NFcore.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- ../src/NFreactions/mappings/../../NFcore/observable.hh \
- ../src/NFreactions/mappings/../reactantLists/reactantContainer.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- ../src/NFreactions/mappings/../reactantLists/reactantList.hh \
- ../src/NFreactions/mappings/../reactantLists/reactantTree.hh \
- ../src/NFreactions/mappings/../transformations/transformationSet.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- ../src/NFreactions/mappings/../transformations/transformation.hh \
- ../src/NFreactions/mappings/../transformations/moleculeCreator.hh \
- ../src/NFreactions/mappings/../transformations/speciesCreator.hh \
- ../src/NFreactions/mappings/../mappings/mapping.hh \
- ../src/NFreactions/mappings/../mappings/../NFreactions.hh \
- /cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh \
- ../src/NFreactions/mappings/../mappings/mappingSet.hh \
- ../src/NFreactions/mappings/../mappings/mappingGenerator.hh \
- ../src/NFreactions/mappings/../../NFutil/setting.hh
+  ../src/NFreactions/mappings/mappingSet.cpp \
+  ../src/NFreactions/mappings/mappingSet.hh \
+  ../src/NFreactions/mappings/../NFreactions.hh \
+  ../src/NFreactions/mappings/../../NFcore/NFcore.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFscheduler/NFstream.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFutil/NFutil.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFreactions/NFreactions.hh \
+  ../src/NFreactions/mappings/../../NFcore/moleculeLists/moleculeList.hh \
+  ../src/NFreactions/mappings/../../NFcore/moleculeLists/../NFcore.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/NFfunction.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParser.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserBase.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserDef.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserFixes.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserStack.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserError.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserToken.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserCallback.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserTokenReader.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserBytecode.h \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/../NFcore/NFcore.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFfunction/../NFutil/setting.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFoutput/NFoutput.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFoutput/../NFcore/NFcore.hh \
+  ../src/NFreactions/mappings/../../NFcore/reactionSelector/reactionSelector.hh \
+  ../src/NFreactions/mappings/../../NFcore/reactionSelector/../NFcore.hh \
+  ../src/NFreactions/mappings/../../NFcore/templateMolecule.hh \
+  ../src/NFreactions/mappings/../../NFcore/../NFutil/setting.hh \
+  ../src/NFreactions/mappings/../../NFcore/observable.hh \
+  ../src/NFreactions/mappings/../reactantLists/reactantContainer.hh \
+  ../src/NFreactions/mappings/../reactantLists/../NFreactions.hh \
+  ../src/NFreactions/mappings/../reactantLists/reactantList.hh \
+  ../src/NFreactions/mappings/../reactantLists/reactantTree.hh \
+  ../src/NFreactions/mappings/../transformations/transformationSet.hh \
+  ../src/NFreactions/mappings/../transformations/../NFreactions.hh \
+  ../src/NFreactions/mappings/../transformations/../../NFutil/setting.hh \
+  ../src/NFreactions/mappings/../transformations/transformation.hh \
+  ../src/NFreactions/mappings/../transformations/moleculeCreator.hh \
+  ../src/NFreactions/mappings/../transformations/speciesCreator.hh \
+  ../src/NFreactions/mappings/../mappings/mapping.hh \
+  ../src/NFreactions/mappings/../../NFutil/setting.hh \
+  ../src/NFreactions/mappings/../mappings/mappingSet.hh \
+  ../src/NFreactions/mappings/../mappings/mappingGenerator.hh
 
 ../src/NFreactions/mappings/mappingSet.hh:
 
@@ -53,63 +49,59 @@ src/NFreactions/mappings/mappingSet.d: \
 
 ../src/NFreactions/mappings/../../NFcore/NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFscheduler/NFstream.h:
+../src/NFreactions/mappings/../../NFcore/../NFscheduler/NFstream.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh:
+../src/NFreactions/mappings/../../NFcore/../NFutil/NFutil.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFreactions/mappings/../../NFcore/../NFreactions/NFreactions.hh:
 
 ../src/NFreactions/mappings/../../NFcore/moleculeLists/moleculeList.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFreactions/mappings/../../NFcore/moleculeLists/../NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/NFfunction.hh:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/NFfunction.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParser.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParser.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBase.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserBase.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserDef.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserDef.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserFixes.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserFixes.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserStack.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserStack.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserError.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserError.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserToken.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserToken.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserCallback.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserCallback.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserTokenReader.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserTokenReader.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFfunction/muParser/muParserBytecode.h:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/muParser/muParserBytecode.h:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/../NFcore/NFcore.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFreactions/mappings/../../NFcore/../NFfunction/../NFutil/setting.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFoutput/NFoutput.hh:
+../src/NFreactions/mappings/../../NFcore/../NFoutput/NFoutput.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/NFutil.hh:
+../src/NFreactions/mappings/../../NFcore/../NFoutput/../NFcore/NFcore.hh:
 
 ../src/NFreactions/mappings/../../NFcore/reactionSelector/reactionSelector.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFcore/NFcore.hh:
+../src/NFreactions/mappings/../../NFcore/reactionSelector/../NFcore.hh:
 
 ../src/NFreactions/mappings/../../NFcore/templateMolecule.hh:
 
-../src/NFreactions/mappings/../../NFcore/NFcore.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFreactions/mappings/../../NFcore/../NFutil/setting.hh:
 
 ../src/NFreactions/mappings/../../NFcore/observable.hh:
 
 ../src/NFreactions/mappings/../reactantLists/reactantContainer.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFreactions/mappings/../reactantLists/../NFreactions.hh:
 
 ../src/NFreactions/mappings/../reactantLists/reactantList.hh:
 
@@ -117,9 +109,9 @@ src/NFreactions/mappings/mappingSet.d: \
 
 ../src/NFreactions/mappings/../transformations/transformationSet.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFreactions/NFreactions.hh:
+../src/NFreactions/mappings/../transformations/../NFreactions.hh:
 
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFreactions/mappings/../transformations/../../NFutil/setting.hh:
 
 ../src/NFreactions/mappings/../transformations/transformation.hh:
 
@@ -129,12 +121,8 @@ src/NFreactions/mappings/mappingSet.d: \
 
 ../src/NFreactions/mappings/../mappings/mapping.hh:
 
-../src/NFreactions/mappings/../mappings/../NFreactions.hh:
-
-/cygdrive/c/Temp/Dropbox/nfsim/src/NFutil/setting.hh:
+../src/NFreactions/mappings/../../NFutil/setting.hh:
 
 ../src/NFreactions/mappings/../mappings/mappingSet.hh:
 
 ../src/NFreactions/mappings/../mappings/mappingGenerator.hh:
-
-../src/NFreactions/mappings/../../NFutil/setting.hh:
