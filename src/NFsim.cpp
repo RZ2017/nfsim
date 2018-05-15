@@ -637,8 +637,8 @@ void printHelp(string version)
 	cout<<""<<endl;
 	cout<<"  -o [filename]     used to specify the output file name."<<endl;
 	cout<<""<<endl;
-	cout<<"  -co               use this flag to tell NFsim to avoid  unbinding reaction"<<endl;
-	cout<<"                    which are connected through another conection"<<endl;
+	cout<<"  -co               use this flag to tell NFsim to disable ring checking in unbinding reaction"<<endl;
+	//cout<<"                    which are connected through another conection"<<endl;
 	cout<<""<<endl;
 	cout<<"  -sim [time]       used to specify the length (in seconds) of a simulation"<<endl;
 	cout<<"                    when running an xml file.  Fractional seconds are valid."<<endl;
