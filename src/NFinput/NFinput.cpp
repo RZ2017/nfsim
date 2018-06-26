@@ -1020,6 +1020,7 @@ bool NFinput::initReactionRules(
 {
 
 	bool show_flag = false; //razi added only for test, later delete
+
 	if(!((DEBUG_ACTIVE) & CREATE_REACTION)) {verbose=false;} //disable extra messages
 
 	try {
@@ -1062,7 +1063,7 @@ bool NFinput::initReactionRules(
 
 				//Grab the name of the rule
 				string rxnName;
-				string ringcheck="_noring";
+				string ringcheck="_ring";
 				if(!pRxnRule->Attribute("id")) {
 					cerr<<"ReactionRule tag without a valid 'id' attribute.  Quiting"<<endl;
 					return false;
@@ -1073,6 +1074,7 @@ bool NFinput::initReactionRules(
 						if(strstr(rxnName.c_str(),ringcheck.c_str()))
 							checkProducts=false;
 					}
+
 
 					if(permutations.size()>1) {
 						stringstream out; out << (p+1);

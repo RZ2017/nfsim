@@ -895,143 +895,228 @@ int TransformationSet::find(TemplateMolecule *t)
 #ifdef RHS_FUNC //Razi added to support RHS functions
 bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool check_ring, bool conectedCheck)
 {
-	bool result = true;
-	bool conectedCheckFlag= false;
-	list <Molecule *> neighbours;
-
-	queue <Molecule *> transformedMols;
-	Molecule * mol1;
-	Molecule * mol2;
-	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
-
-	// addMolecule transforms are applied before other transforms so the molecules exist
-	//  for potential modification by other transforms.
-
-//cout<<"AAA1 ";mypause(-1);
-//cout<<"addMoleculeTransformations.size():"<<addMoleculeTransformations.size()<<"   addSpeciesTransformations.size():"<<addSpeciesTransformations.size()<<endl;
-
-
-	if(!testmode){
-		int size = addMoleculeTransformations.size();
-		if(size>0) {
-			for(int i=0; i<size; i++) {
-				addMoleculeTransformations.at(i)->apply_and_map( mappingSets[n_reactants+i]);
-			}
-		}
-
-		// apply addSpecies transforms, so we have all the molecules out there
-		size = addSpeciesTransformations.size();
-		if(size>0) {
-			for(int i=0; i<size; i++) {
-				addSpeciesTransformations.at(i)->apply(NULL,NULL);
-			}
-		}
-	}
-
-//cout<<"AAA2 nMappingSet:"<<getNmappingSets()<<"  ";mypause(-1);
-	// loop over reactants and added molecules, apply transforms to each
-	
+//	TemplateMolecule ** productTemplates = this->getproductTemplates();
+//	n_productTemplates = this->getn_productTemplates();
+//	for(int i=0;i<n_productTemplates;i++)
+//		{
+//			int ReactantIndex = find(productTemplates[i], true);
+//		}
 	for(unsigned int r=0; r<getNmappingSets(); r++)
 	{
-
 		MappingSet *ms = mappingSets[r];
 		for ( unsigned int t=0;  t<transformations[r].size();  t++ )
 		{
-//cout<<"BBB2 r:"<<r<<"  t:"<<t<<"  ";mypause(-1);
-			if(transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
+			if( transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
 			{	// handle deletions
-//cout<<"BBB2-1 r:"<<r<<"  t:"<<t<<"  "; mypause(-1);
-				if (!testmode) {
-					Molecule * mol = ms->get(t)->getMolecule();
-					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
-					{	// complex deletion: flag connected molecules for deletion
-						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
-					}
-					else
-					{	// molecule deletion: flag this molecule for deletion
-						deleteList.push_back( mol );
-					}
+				Molecule * mol = ms->get(t)->getMolecule();
+				if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
+				{	// complex deletion: flag connected molecules for deletion
+					mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
+				}
+				else
+				{	// molecule deletion: flag this molecule for deletion
+					deleteList.push_back( mol );
 				}
 			}
 			else
 			{	// handle other transforms
-				//if (DEBUG_ACTIVE & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
-				if ((transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING) ){
-					//make sure that unbin breakes down the involving molecules into separate islands [there is no other connection]
-
-
-					 mol1 = ms->get(t)->getMolecule();
-				//	mol1->printDetails();
-					int index1 = ms->get(t)->getIndex();
-					 mol2 = mol1->getBondedMolecule(index1);
-				//	mol2->printDetails();
-					if ((!mol1)||(!mol2)){
-						//cout<<"Transformation Error: Try to unbond two molecules that does not exist\n.";
-						result=false;
-					}
-					transformations[r].at(t)->apply(ms->get(t), mappingSets);
-					//cout<<"transformed"<<endl;
-				//	mol1->printDetails();
-				//	mol2->printDetails();
-					conectedCheckFlag=conectedCheck;
-
-					//razi: find connected molecules after applying the unbind transformation
-					if(check_ring)
-					{
-					mol1->traverseBondedNeighborhood(neighbours, ReactionClass::NO_LIMIT);
-					for (list <Molecule *>::iterator it= neighbours.begin(); it!=neighbours.end(); it++){
-						if ((*it)->getUniqueID() == mol2->getUniqueID()){
-							//cout<<"Transformation Error: Try to unbond two molecules, but there is an alternative connection!!!\n.";
-							result=false;
-						}
-					}
-				}
-
-
+				transformations[r].at(t)->apply(ms->get(t), mappingSets);
 			}
 		}
 	}
 
 
-		// Ali:Check connected_to case
-//	if(!transformedMols.empty())
+//bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool check_ring, bool conectedCheck)
+//{
+	bool result = true;
+//	bool UnbindingFlag= false;
+//	list <Molecule *> neighbours;
+//
+//	queue <Molecule *> transformedMols;
+//	Molecule * mol1;
+//	Molecule * mol2;
+//	if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
+//
+//	// addMolecule transforms are applied before other transforms so the molecules exist
+//	//  for potential modification by other transforms.
+//
+////cout<<"AAA1 ";mypause(-1);
+////cout<<"addMoleculeTransformations.size():"<<addMoleculeTransformations.size()<<"   addSpeciesTransformations.size():"<<addSpeciesTransformations.size()<<endl;
+//
+//
+//	if(!testmode){
+//		int size = addMoleculeTransformations.size();
+//		if(size>0) {
+//			for(int i=0; i<size; i++) {
+//				addMoleculeTransformations.at(i)->apply_and_map( mappingSets[n_reactants+i]);
+//			}
+//		}
+//
+//		// apply addSpecies transforms, so we have all the molecules out there
+//		size = addSpeciesTransformations.size();
+//		if(size>0) {
+//			for(int i=0; i<size; i++) {
+//				addSpeciesTransformations.at(i)->apply(NULL,NULL);
+//			}
+//		}
+//	}
+//
+////cout<<"AAA2 nMappingSet:"<<getNmappingSets()<<"  ";mypause(-1);
+//	// loop over reactants and added molecules, apply transforms to each
+//
+//	for(unsigned int r=0; r<getNmappingSets(); r++)
 //	{
-		if(conectedCheckFlag && result)
-		{
-		bool FinalResult=true;
-		bool Resultconnected=false;
-		for ( unsigned int k=0;  k<n_productTemplates;k++ )
-				{
-					transformedMols.push(mol1);
-					transformedMols.push(mol2);
-			for ( unsigned int j=0;  j<transformedMols.size();j++ )
-									{
-			result = productTemplates[k]->compareConnected(transformedMols.front(),ms);
-			transformedMols.pop();
-			Resultconnected = Resultconnected ||result;
-									}
-			FinalResult = FinalResult && Resultconnected;
-				}
-		if(!FinalResult) return false;
-
-		}
-	}
-//}
-
-
-	if (!testmode) {
-		//Each molecule that is on the delete list must be dealt with
-		Molecule * mol;
-		for( it = deleteList.begin(); it!=deleteList.end(); it++)
-		{
-			mol = *it;
-			mol->getMoleculeType()->removeMoleculeFromRunningSystem(mol);
-		}
-		deleteList.clear();
-	}
+//
+//		MappingSet *ms = mappingSets[r];
+//		for ( unsigned int t=0;  t<transformations[r].size();  t++ )
+//		{
+////cout<<"BBB2 r:"<<r<<"  t:"<<t<<"  ";mypause(-1);
+//			if(transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
+//			{	// handle deletions
+////cout<<"BBB2-1 r:"<<r<<"  t:"<<t<<"  "; mypause(-1);
+//				if (!testmode) {
+//					Molecule * mol = ms->get(t)->getMolecule();
+//					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
+//					{	// complex deletion: flag connected molecules for deletion
+//						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
+//					}
+//					else
+//					{	// molecule deletion: flag this molecule for deletion
+//						deleteList.push_back( mol );
+//					}
+//				}
+//			}
+//			else
+//			{	// handle other transforms
+//				if(transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING)
+//				{
+//				UnbindingFlag=true;
+//				 mol1 = ms->get(t)->getMolecule();
+//				 mol1->printDetails();
+//				int index1 = ms->get(t)->getIndex();
+//				 mol2 = mol1->getBondedMolecule(index1);
+//
+//				}
+//				//if (DEBUG_ACTIVE & SHOW_FIRE) {cout<<"Transform:  reactant:"<<r<<"  transformation:"<<t<<"  transformation type:"<< transformations[r].at(t)->getType()<<".\n";//ms->get(t)->printDetails(); mypause(-1);}
+//				if ((check_ring&&transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING) ){
+//					//make sure that unbin breakes down the involving molecules into separate islands [there is no other connection]
+//
+//
+//					 mol1 = ms->get(t)->getMolecule();
+//				//	mol1->printDetails();
+//					int index1 = ms->get(t)->getIndex();
+//					 mol2 = mol1->getBondedMolecule(index1);
+//				//	mol2->printDetails();
+//					if ((!mol1)||(!mol2)){
+//						cout<<"Transformation Error: Try to unbond two molecules that does not exist\n.";
+//						result=false;
+//					}
+//					transformations[r].at(t)->apply(ms->get(t), mappingSets);
+//					//cout<<"transformed"<<endl;
+//				//	mol1->printDetails();
+//				//	mol2->printDetails();
+//				//	conectedCheckFlag=conectedCheck;
+//
+//					//razi: find connected molecules after applying the unbind transformation
+//
+//					mol1->traverseBondedNeighborhood(neighbours, ReactionClass::NO_LIMIT);
+//					for (list <Molecule *>::iterator it= neighbours.begin(); it!=neighbours.end(); it++){
+//						if ((*it)->getUniqueID() == mol2->getUniqueID()){
+//							cout<<"Transformation Error: Try to unbond two molecules, but there is an alternative connection!!!\n.";
+//							result=false;
+//						}
+//					}
+//				}
+//					else
+//					{
+//						transformations[r].at(t)->apply(ms->get(t), mappingSets);
+//
+//					}
+//
+//
+//		}
+//	}
+//
+//
+//		// Ali:Check connected_to case
+////	if(!transformedMols.empty())
+////	{
+//		if(conectedCheck && result && UnbindingFlag)
+//		{
+//		bool FinalResult=true;
+//		for ( unsigned int k=0;  k<n_productTemplates;k++ )
+//				{
+//
+//			bool Resultconnected=false;
+//					transformedMols.push(mol1);
+//					transformedMols.push(mol2);
+//					int MolSize = transformedMols.size();
+//					for ( unsigned int j=0; j<MolSize;j++ )
+//					{
+//					//	productTemplates[k]->printDetails();
+//						result = productTemplates[k]->compareConnected(transformedMols.front(),ms);
+//						transformedMols.pop();
+//						Resultconnected = Resultconnected ||result;
+//					}
+//					FinalResult = FinalResult && Resultconnected;
+//				}
+//		if(!FinalResult) return false;
+//
+//		}
+//	}
+////}
+//	list <Molecule *> products;
+//	list <Molecule *>::iterator molIter;
+//	bool a = this->getListOfProducts(mappingSets,products,4);
+//	cout<<"Product molecules are: ";
+//	for( molIter = products.begin(); molIter != products.end(); molIter++ ) {
+//		cout<<"M:"<<(*molIter)->getMoleculeTypeName()<<"_Lid"<< (*molIter)->getMolListId()<<",    ";
+//		(*molIter)->printDetails();
+//	} cout<<endl;
+//	if (!testmode) {
+//		//Each molecule that is on the delete list must be dealt with
+//		Molecule * mol;
+//		for( it = deleteList.begin(); it!=deleteList.end(); it++)
+//		{
+//			mol = *it;
+//			mol->getMoleculeType()->removeMoleculeFromRunningSystem(mol);
+//		}
+//		deleteList.clear();
+//	}
 
 	return result;
 }
+ void TransformationSet::setUnbindingParties(MappingSet **mappingSets,list<list <Molecule *> >  &unibinidingParties)
+ {
+//int a=find2();
+		for(unsigned int r=0; r<getNmappingSets(); r++)
+		{
+
+			MappingSet *ms = mappingSets[r];
+			for ( unsigned int t=0;  t<transformations[r].size();  t++ )
+			{
+				list <Molecule *> partiesList;
+				Molecule * mol1;
+				Molecule * mol2;
+
+				if(transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING)
+					{
+					 mol1 = ms->get(t)->getMolecule();
+//					 mol1->printDetails();
+					int index1 = ms->get(t)->getIndex();
+					 mol2 = mol1->getBondedMolecule(index1);
+					 partiesList.push_back(mol1);
+					 partiesList.push_back(mol2);
+					 if ((!mol1)||(!mol2)){
+					 							cout<<"Transformation Error: Try to unbond two molecules that does not exist\n.";
+					 							exit(0);
+					 						}
+					}
+
+				unibinidingParties.push_back(partiesList);
+			}
+		}
+ }
 
 bool TransformationSet::transform(MappingSet **mappingSets){
 	return TransformationSet::transform(mappingSets, false, false, false);

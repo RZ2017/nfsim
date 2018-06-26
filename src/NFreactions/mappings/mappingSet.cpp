@@ -44,8 +44,8 @@ MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
 
 	this->id = ms->id;
 	if (Mols.size() < ms->n_mappings){
-			cout<<"MappingSet Error==> Inconsistency between the number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
-			ms->printDetails();// exit(0);
+		//	cout<<"MappingSet Error==> Inconsistency between the number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
+		//	ms->printDetails();// exit(0);
 	}
 	new Mapping *[ms->n_mappings];
 	int mapping_counter=0;

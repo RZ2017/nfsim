@@ -667,7 +667,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 	bool check_products =system->get_check_products();
 	if ((this->reactionType != RHS_RXN) && (!check_products) && (!conectedCheck)){
 		//cout<<"skip product checking. neither RHS function exist, nor ring check is active.\n";
-		return true;
+	//	return true;
 	}
 	//proceed with checking output reactants
 
@@ -775,9 +775,205 @@ bool ReactionClass::checkReaction()   //clone reactants
 //			this->transformationSet->transform(check_mappingSet, true, false,conectedCheck);  //apply the transformation on test molecules
 //		}
 
+		// Ali : I am going to use a modified compare function to get a mol list which store mol which Tempelatemolecule pass the reactant based on them
+		list<list <Molecule *> >  reactantMolsContainer;
+		list <list <Molecule *> > productsCheckReactMolsContainer;
+		list <Molecule *> productsCheckProductMolsContainer;
+		//added on June 15th
+		list<list <Molecule *> > unibinidingParties;
+
+		list <Molecule *> 		  productsCheckReactMols;
+		list <TemplateMolecule *> templatetMolsReactants;
+		list <TemplateMolecule *> templatetMolsProductsts;
+		list <TemplateMolecule *> templatetMolsProductstsLists;
+		//	MoleculeLists = new MoleculeList *[n_reactants];
+		//Set up the reactantLists
+
+		//	queue <Molecule *> reactantMols;
+			Molecule * mol1;
+			Molecule * mol2;
+
+			Molecule * party1;
+			Molecule * party2;
+			list <Molecule *> parties;
+			reactantsProductsMaps;
+//	// following part is for extracting unbinding parties
+//		transformationSet->setUnbindingParties(check_mappingSet,unibinidingParties);
+//		int count=0;
+//		for (list<list <Molecule *>>::iterator it= unibinidingParties.begin(); it!=unibinidingParties.end(); it++,count++){
+//			if (count>1)
+//			{
+//				cerr<<"This part has nnot been developed"<<endl;
+//				exit(0);
+//			}
+//
+//			parties = *it;
+//			party1 = parties.front();
+//			party2 = parties.back();
+//		}
+			list <Molecule *> reactantMols;
+		for(unsigned int r=0; r<transformationSet->getNmappingSets(); r++)
+		{
+			//First extract the molecule which is head of the complex
+
+			MappingSet *ms = check_mappingSet[r];
+		//	for (  int t=0;  t<transformationSet->getNumOfTransformations(r);  t++ )
+		//	{
+
+				//	Mapping * abc = ;
+			mol1= ms->get(0)->getMolecule();
+					//ms->printDetails();
+					//try{
+						///if(ms->getNumOfMappings()==1)
+				//			int ali=1;
+						//The error here is because getNumOfTransformations return 2 while we do not have enough mapping in the mappingset r
+					//	cout<<transformationSet->getNumOfTransformations(r)<<endl;
+					//	cout<<r<<endl;
+					//	cout<<t<<endl;
+					//	cout<<ms->getNumOfMappings()<<endl;
+					//	cout<<abc<<endl;
+	//abc->printDetails();
+	//				;
+//}
+	//				catch(...)
+		//							{
+		//								int a=1;
+			//						}
+				if (mol1->hasVisitedForProductCheck != true)
+				{
+				mol1->hasVisitedForProductCheck = true;
+//				mol1->printDetails();
+				reactantMols.push_back(mol1);
+				}
+
+			reactantMolsContainer.push_back(reactantMols);
+
+			//Here we walk through the molecule and we compare it with Tempelate if they matched we store both Tempelate and actual molecule. So after this step we know that A in A.B->A+B
+			//matched to which molecule(we have the pointer)
+			for (list <Molecule *>::iterator it= reactantMols.begin(); it!=reactantMols.end(); it++){
+//				reactantTemplates[r]->printDetails();
+				reactantTemplates[r]->compare2((*it),ms,productsCheckReactMols,templatetMolsReactants);
+
+			}
+
+		//	productsCheckReactMolsContainer.push_back(productsCheckReactMols);
+		}
+		//Now we have a pointer to all of the molecules in reactant so we need to iterate over product tempelate and try to match each of them with transformed version of our molecule
+
+		bool resall =true;
 		result = this->transformationSet->transform(check_mappingSet, true, this->checkProducts&&check_products,conectedCheck);  //apply the transformation on test molecules
+//Eventually we want to make sure that the product tempelate that we have is matched with product molecules
 
+		bool res2[10]={false};
+	    int counter=0;
 
+		list <Molecule *> productsCheckproductMols;
+		list <Molecule *> productsCheckproductMolsList;
+		//We first check templetes with molecule for normal reaction A.B->A+B
+		for(unsigned int i=0;i<n_productTemplates;i++)
+			{
+			bool res =false;
+			bool res1=false;
+			int j=0;
+			//Here we check each of the molecules that we found for reactants (In previous for loop) with templates of product
+			//After this for we have templatetMolsProductsts which contains all of the tepleates for products and productsCheckproductMols which contain corresponding molecule
+			//It should match with the templatetMolsProductsts
+			for (list <Molecule *>::iterator it= productsCheckReactMols.begin(); it!=productsCheckReactMols.end(); it++,j++){
+
+				res1 = productTemplates[i]->compare2((*it),ms,productsCheckproductMols,templatetMolsProductsts);
+				if(res2[j]!=true)
+				{
+				res = res || res1;
+				//If the reactant match with product templeate we store its data
+				if(res1)
+				{
+					res2[j]=true;
+					counter++;
+					productsCheckproductMolsList.merge(productsCheckproductMols);
+					templatetMolsProductstsLists.merge(templatetMolsProductsts);
+					productsCheckProductMolsContainer.push_back(*it);
+				}
+				}
+				templatetMolsProductsts.clear();
+				productsCheckproductMols.clear();
+			}
+			//Now we need to handle the case that first product template matched multiple molecules but second product tempelate matched none of non-matched Molecule.
+			// here we are sure that there is no match available so we iterte over already matched. If we find a match for second tempelate we are good to go
+			if(counter>0 && res != true)
+			{
+
+				for (list <Molecule *>::iterator it= productsCheckproductMolsList.begin(); it!=productsCheckproductMolsList.end(); it++){
+					res = res||productTemplates[i]->compare2((*it),ms,productsCheckproductMols,templatetMolsProductsts);
+				}
+			}
+			resall = resall && res;
+			}
+		result =resall;
+		// This part is supposed to handle A(s!1).A(s!1)->A(s).A(s)
+		if (n_productTemplates==1 && result)
+		{
+		productsCheckproductMolsList.sort();
+
+		productsCheckproductMolsList.unique();
+		int k=0;
+		for (list <Molecule *>::iterator it= productsCheckproductMolsList.begin(); it!=productsCheckproductMolsList.end(); it++){
+			for (list <Molecule *>::iterator it1= productsCheckReactMols.begin(); it1!=productsCheckReactMols.end(); it1++){
+				if((*it)==(*it1))
+				{
+					k++;
+					continue;
+				}
+			}
+		}
+		if(productsCheckproductMolsList.size()!=productsCheckReactMols.size())
+		{
+			result= false;
+		}
+		if(k!=productsCheckproductMolsList.size())
+		{
+			result =false;
+		}
+		}
+	// Now it is time to check ring connection
+		if(result && n_productTemplates>1)
+		{
+	//make sure that unbin breakes down the involving molecules into separate islands [there is no other connection]
+			bool result1 =true;
+			bool result2 =true;
+
+			Molecule * mol1list = productsCheckProductMolsContainer.front();
+			Molecule * mol2list = productsCheckProductMolsContainer.back();
+			list <Molecule *> neighboursmol1;
+							//	mol1->printDetails();
+			mol1 = mol1list;
+			mol2 = mol2list;
+							//	mol2->printDetails();
+			if (((!mol1)||(!mol2)) && mol1==mol2){
+				cout<<"No unbinding found!";//"Transformation Error: Try to unbond two molecules that does not exist\n.";
+
+			}
+			else{
+			//Check product 2 in product 1 connections
+			mol1->traverseBondedNeighborhood(neighboursmol1, ReactionClass::NO_LIMIT);
+			for (list <Molecule *>::iterator it= neighboursmol1.begin(); it!=neighboursmol1.end(); it++){
+				if ((*it)->getUniqueID() == mol2->getUniqueID()){
+					//cout<<"Transformation Error: Try to unbond two molecules, but there is an alternative connection!!!\n.";
+					result1=false;
+				}
+			}
+			//Check product 1 in product 2 connections
+			list <Molecule *> neighboursmol2;
+			mol2->traverseBondedNeighborhood(neighboursmol2, ReactionClass::NO_LIMIT);
+			for (list <Molecule *>::iterator it= neighboursmol2.begin(); it!=neighboursmol2.end(); it++){
+				if ((*it)->getUniqueID() == mol1->getUniqueID()){
+					//cout<<"Transformation Error: Try to unbond two molecules, but there is an alternative connection!!!\n.";
+					result2=false;
+				}
+			}
+
+			result =  result1 && result2;
+			}
+		}
 
 		//razi: now it is time to check the RHS function
 		if (result && (this->reactionType == RHS_RXN)){

@@ -39,7 +39,7 @@ Molecule::Molecule(MoleculeType * parentMoleculeType, int listId)
 		hasVisitedBond[b] = false;
 	}
 
-
+	hasVisitedForProductCheck = false;
 	hasVisitedMolecule = false;
 	hasEvaluatedMolecule = false;
 	isMatchedTo=0;

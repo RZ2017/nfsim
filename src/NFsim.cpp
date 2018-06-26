@@ -76,8 +76,6 @@
  *
  *  -cb = turn on complex bookkeeping, see manual
  *
- *  -co = Enable ring checking
- *
  *  -gml [integer] = sets maximal number of molecules, per any MoleculeType, see manual
  *
  *  -nocslf = disable evaluation of Complex-Scoped Local Functions

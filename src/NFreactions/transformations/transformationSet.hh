@@ -174,6 +174,7 @@ namespace NFcore
 
 #endif
 			bool transform(MappingSet **mappingSets);
+			void setUnbindingParties(MappingSet **mappingSets,list<list <Molecule *> >  &unibinidingParties);
 
 			/*!
 				Generates a blank MappingSet (blank in the sense that it is not mapped to

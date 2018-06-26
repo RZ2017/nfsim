@@ -679,7 +679,6 @@ double System::sim(double duration, long int sampleTimes, bool verbose)
 	//outputAllObservableNames();
 	//this->printAllReactions();
 
-
 	//////////////////////////////
 	clock_t start,finish;
 	double time;

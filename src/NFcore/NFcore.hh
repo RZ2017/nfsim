@@ -955,6 +955,7 @@ namespace NFcore
 			/* used for traversing a molecule complex */
 			bool hasVisitedMolecule;
 			bool * hasVisitedBond;
+			bool hasVisitedForProductCheck;
 			bool connectedCheck = false;
 			TemplateMolecule *isMatchedTo;
 
@@ -1144,7 +1145,8 @@ namespace NFcore
 
 
 			void setTotalRateFlag(bool totalRate) { totalRateFlag = totalRate; };
-
+			void setReactantsProductsMaps(vector< vector <TemplateMolecule *> > *reactantsProductsMaps){this->reactantsProductsMaps = *reactantsProductsMaps;
+			};
 
 			// _NETGEN_
 			void set_match( vector <MappingSet *> & match_set );
@@ -1154,6 +1156,7 @@ namespace NFcore
 #ifdef RHS_FUNC    //Razi: Check connections between the reaction products
 			virtual bool checkReaction(); //Razi added to support RHS functions
 			unsigned int n_productTemplates;
+
 #endif
 
 		protected:
@@ -1162,7 +1165,7 @@ namespace NFcore
 			int rxnId;
 
 			/* if this reaction is tagged, it outputs a message everytime it is fired */
-			
+			vector< vector <TemplateMolecule *> > reactantsProductsMaps;
 			string name;
 			int reactionType;
 			unsigned int n_reactants;
