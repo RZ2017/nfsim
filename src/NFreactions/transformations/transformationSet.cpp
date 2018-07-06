@@ -901,6 +901,23 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 //		{
 //			int ReactantIndex = find(productTemplates[i], true);
 //		}
+	if(!testmode){
+		if(!finalized) { cerr<<"TransformationSet cannot apply a transform if it is not finalized!"<<endl; exit(1); }
+		int size = addMoleculeTransformations.size();
+		if(size>0) {
+			for(int i=0; i<size; i++) {
+				addMoleculeTransformations.at(i)->apply_and_map( mappingSets[n_reactants+i]);
+			}
+		}
+
+		// apply addSpecies transforms, so we have all the molecules out there
+		size = addSpeciesTransformations.size();
+		if(size>0) {
+			for(int i=0; i<size; i++) {
+				addSpeciesTransformations.at(i)->apply(NULL,NULL);
+			}
+		}
+	}
 	for(unsigned int r=0; r<getNmappingSets(); r++)
 	{
 		MappingSet *ms = mappingSets[r];
@@ -908,14 +925,16 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 		{
 			if( transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
 			{	// handle deletions
-				Molecule * mol = ms->get(t)->getMolecule();
-				if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
-				{	// complex deletion: flag connected molecules for deletion
-					mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
-				}
-				else
-				{	// molecule deletion: flag this molecule for deletion
-					deleteList.push_back( mol );
+				if (!testmode) {
+					Molecule * mol = ms->get(t)->getMolecule();
+					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
+					{	// complex deletion: flag connected molecules for deletion
+						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
+					}
+					else
+					{	// molecule deletion: flag this molecule for deletion
+						deleteList.push_back( mol );
+					}
 				}
 			}
 			else
@@ -924,11 +943,21 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 			}
 		}
 	}
+	if (!testmode) {
+		//Each molecule that is on the delete list must be dealt with
+		Molecule * mol;
+		for( it = deleteList.begin(); it!=deleteList.end(); it++)
+		{
+			mol = *it;
+			mol->getMoleculeType()->removeMoleculeFromRunningSystem(mol);
+		}
+		deleteList.clear();
+	}
 
 
 //bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool check_ring, bool conectedCheck)
 //{
-	bool result = true;
+//	bool result = true;
 //	bool UnbindingFlag= false;
 //	list <Molecule *> neighbours;
 //
@@ -1084,7 +1113,7 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 //		deleteList.clear();
 //	}
 
-	return result;
+	return true;
 }
  void TransformationSet::setUnbindingParties(MappingSet **mappingSets,list<list <Molecule *> >  &unibinidingParties)
  {

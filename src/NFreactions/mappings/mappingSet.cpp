@@ -58,6 +58,10 @@ MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
 		}
 	}
 	}
+	else
+	{
+		mapping_counter=1;
+	}
 	this->n_mappings = mapping_counter;//was ms->n_mappings;
 
 	this->mappings = new Mapping *[n_mappings];

@@ -644,7 +644,21 @@ void ReactionClass::fire(double random_A_number) {
 
 bool ReactionClass::checkReaction()   //clone reactants
 {
+	for(unsigned int r=0; r<transformationSet->getNmappingSets(); r++)
+	{
+		//First extract the molecule which is head of the complex
+		int NumOfTransformation = transformationSet->getNumOfTransformations(r,false);
 
+						for ( unsigned int t=0;  t<NumOfTransformation;  t++ )
+					{
+							int  TransformationType = transformationSet->getTransformation(r,t)->getType();
+							if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 )
+							{
+								return true;
+								//productSideCheckFlag = false;
+							}
+					}
+	}
 	//return true;  //Razi: bypass check only for test, later uncomment
 	bool verbose = false;
 	if (DEBUG_ACTIVE & (SHOW_FIRE | SHOW_RHS))
@@ -694,13 +708,13 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 
 
-	if(verbose){
-		mappingSet[0]->get(0)->getMolecule()->printDetails();
-		if(n_mappingsets>1)
-		{
-			mappingSet[1]->get(0)->getMolecule()->printDetails();
-		}
-	}
+//	if(verbose){
+//		mappingSet[0]->get(0)->getMolecule()->printDetails();
+//		if(n_mappingsets>1)
+//		{
+//			mappingSet[1]->get(0)->getMolecule()->printDetails();
+//		}
+//	}
 
 	//razi: lets first copy all reactants and their connected molecules
 	for(unsigned int k=0; k<n_reactants; k++) {
@@ -811,16 +825,31 @@ bool ReactionClass::checkReaction()   //clone reactants
 //			party1 = parties.front();
 //			party2 = parties.back();
 //		}
+			bool productSideCheckFlag = true;
 			list <Molecule *> reactantMols;
 		for(unsigned int r=0; r<transformationSet->getNmappingSets(); r++)
 		{
 			//First extract the molecule which is head of the complex
+			int NumOfTransformation = transformationSet->getNumOfTransformations(r,false);
+
+							for ( unsigned int t=0;  t<NumOfTransformation;  t++ )
+						{
+								int  TransformationType = transformationSet->getTransformation(r,t)->getType();
+								if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 )
+								{
+									productSideCheckFlag = false;
+								}
+						}
+		}
+	for(unsigned int r=0; r<transformationSet->getNmappingSets(); r++)
+		{
 
 			MappingSet *ms = check_mappingSet[r];
 		//	for (  int t=0;  t<transformationSet->getNumOfTransformations(r);  t++ )
 		//	{
 
-				//	Mapping * abc = ;
+			if(productSideCheckFlag){
+		//	Mapping * abc = ;
 			mol1= ms->get(0)->getMolecule();
 					//ms->printDetails();
 					//try{
@@ -856,14 +885,35 @@ bool ReactionClass::checkReaction()   //clone reactants
 
 			}
 
+			////cout<<"BBB2 r:"<<r<<"  t:"<<t<<"  ";mypause(-1);
+			//			if(transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
+			//			{	// handle deletions
+			////cout<<"BBB2-1 r:"<<r<<"  t:"<<t<<"  "; mypause(-1);
+			//				if (!testmode) {
+			//					Molecule * mol = ms->get(t)->getMolecule();
+			//					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
+			//					{	// complex deletion: flag connected molecules for deletion
+			//						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
+			//					}
+			//					else
+			//					{	// molecule deletion: flag this molecule for deletion
+			//						deleteList.push_back( mol );
+			//					}
+			//				}
+			//			}
+			//			else
+			//			{	// handle other transforms
+			//				if(transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING)
 		//	productsCheckReactMolsContainer.push_back(productsCheckReactMols);
 		}
+	}
 		//Now we have a pointer to all of the molecules in reactant so we need to iterate over product tempelate and try to match each of them with transformed version of our molecule
 
 		bool resall =true;
 		result = this->transformationSet->transform(check_mappingSet, true, this->checkProducts&&check_products,conectedCheck);  //apply the transformation on test molecules
 //Eventually we want to make sure that the product tempelate that we have is matched with product molecules
-
+		if(productSideCheckFlag)
+		{
 		bool res2[10]={false};
 	    int counter=0;
 
@@ -974,7 +1024,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 			result =  result1 && result2;
 			}
 		}
-
+	}
 		//razi: now it is time to check the RHS function
 		if (result && (this->reactionType == RHS_RXN)){
 			//cout<<"press a key to evaluate RHS func(1)...."; mypause(-1);
