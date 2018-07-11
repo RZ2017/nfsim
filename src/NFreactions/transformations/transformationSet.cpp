@@ -1150,7 +1150,6 @@ bool TransformationSet::transform(MappingSet **mappingSets, bool testmode, bool 
 bool TransformationSet::transform(MappingSet **mappingSets){
 	return TransformationSet::transform(mappingSets, false, false, false);
 }
-
 #else
 bool TransformationSet::transform(MappingSet **mappingSets)
 {

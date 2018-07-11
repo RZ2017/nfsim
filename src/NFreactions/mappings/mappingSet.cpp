@@ -47,7 +47,7 @@ MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
 		//	cout<<"MappingSet Error==> Inconsistency between the number of molecules:"<<Mols.size() <<" and the number of expected mappings:"<< ms->n_mappings<<"!!!";
 		//	ms->printDetails();// exit(0);
 	}
-	new Mapping *[ms->n_mappings];
+	//new Mapping *[ms->n_mappings];
 	int mapping_counter=0;
 	if (ms->n_mappings > 1){
 		for(unsigned int m=0; m<ms->n_mappings; m++) {
@@ -73,7 +73,10 @@ MappingSet::MappingSet(MappingSet * ms, list <Molecule *> &Mols){
 	mC = Mols.front();Mols.pop_front(); //Razi: code for list
 	for(unsigned int m=0; m<ms->n_mappings; m++) {
 		if(ms->mappings[m]->getType() != 8 && ms->mappings[m]->getType() != 9 && ms->mappings[m]->getType() != 10){
-			mappings[counter] = new Mapping(ms->mappings[m], mC);
+			if(ms->get(m)->getMolecule()->getCopy()!=0)
+				mappings[counter] = new Mapping(ms->mappings[m], ms->get(m)->getMolecule()->getCopy());
+			else
+				mappings[counter] = new Mapping(ms->mappings[m], mC);
 			counter++;
 		}
 	}

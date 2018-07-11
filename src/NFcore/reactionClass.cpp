@@ -652,7 +652,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 						for ( unsigned int t=0;  t<NumOfTransformation;  t++ )
 					{
 							int  TransformationType = transformationSet->getTransformation(r,t)->getType();
-							if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 )
+							if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 && TransformationType!=5)
 							{
 								return true;
 								//productSideCheckFlag = false;
@@ -733,7 +733,11 @@ bool ReactionClass::checkReaction()   //clone reactants
 		origMs.clear(); copyMs.clear();
 
 		origM->CopybreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
-		origM->unpointbreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
+		//for A(s).A(s)->A(s!1).A(s!1) we should avoid next step because it doesnot let to do correct mapping
+	//	if(n_reactants>1)
+	//	{
+
+	//	}
 		start_id=start_id+copyMs.size();
 
 
@@ -751,7 +755,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 		//mappingSet[k]->printDetails();ms->printDetails();
 
 		check_mappingSet[k] = ms;
-
+		origM->unpointbreadthFirstSearch(origM, copyM, origMs, copyMs, maxDepth, start_id, verbose);
 	}
 
 
@@ -835,7 +839,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 							for ( unsigned int t=0;  t<NumOfTransformation;  t++ )
 						{
 								int  TransformationType = transformationSet->getTransformation(r,t)->getType();
-								if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 )
+								if(TransformationType!=0 && TransformationType!=1 && TransformationType!=2 && TransformationType!=5)
 								{
 									productSideCheckFlag = false;
 								}
@@ -926,7 +930,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 			bool res1=false;
 			int j=0;
 			//Here we check each of the molecules that we found for reactants (In previous for loop) with templates of product
-			//After this for we have templatetMolsProductsts which contains all of the tepleates for products and productsCheckproductMols which contain corresponding molecule
+			//After this For, we have templatetMolsProductsts which contains all of the tepleates for products and productsCheckproductMols which contain corresponding molecule
 			//It should match with the templatetMolsProductsts
 			for (list <Molecule *>::iterator it= productsCheckReactMols.begin(); it!=productsCheckReactMols.end(); it++,j++){
 
@@ -1051,7 +1055,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 			}
 
 		}
-		return result;
+	//	return result;
 	}
 
 
@@ -1092,7 +1096,6 @@ bool ReactionClass::checkReaction()   //clone reactants
 	}
 
 	//if (verbose) {cout<<"RHS evaluation on test molecule is finished. result: "<<result<<endl;mypause(20);}
-
 	return result;
 }
 #endif
