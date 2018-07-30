@@ -794,12 +794,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 //		}
 
 		// Ali : I am going to use a modified compare function to get a mol list which store mol which Tempelatemolecule pass the reactant based on them
-		list<list <Molecule *> >  reactantMolsContainer;
-		list <list <Molecule *> > productsCheckReactMolsContainer;
 		list <Molecule *> productsCheckProductMolsContainer;
-		//added on June 15th
-		list<list <Molecule *> > unibinidingParties;
-
 		list <Molecule *> 		  productsCheckReactMols;
 		list <TemplateMolecule *> templatetMolsReactants;
 		list <TemplateMolecule *> templatetMolsProductsts;
@@ -814,21 +809,7 @@ bool ReactionClass::checkReaction()   //clone reactants
 			Molecule * party1;
 			Molecule * party2;
 			list <Molecule *> parties;
-			reactantsProductsMaps;
-//	// following part is for extracting unbinding parties
-//		transformationSet->setUnbindingParties(check_mappingSet,unibinidingParties);
-//		int count=0;
-//		for (list<list <Molecule *>>::iterator it= unibinidingParties.begin(); it!=unibinidingParties.end(); it++,count++){
-//			if (count>1)
-//			{
-//				cerr<<"This part has nnot been developed"<<endl;
-//				exit(0);
-//			}
-//
-//			parties = *it;
-//			party1 = parties.front();
-//			party2 = parties.back();
-//		}
+
 			bool productSideCheckFlag = true;
 			list <Molecule *> reactantMols;
 		for(unsigned int r=0; r<transformationSet->getNmappingSets(); r++)
@@ -849,66 +830,21 @@ bool ReactionClass::checkReaction()   //clone reactants
 		{
 
 			MappingSet *ms = check_mappingSet[r];
-		//	for (  int t=0;  t<transformationSet->getNumOfTransformations(r);  t++ )
-		//	{
 
 			if(productSideCheckFlag){
-		//	Mapping * abc = ;
-			mol1= ms->get(0)->getMolecule();
-					//ms->printDetails();
-					//try{
-						///if(ms->getNumOfMappings()==1)
-				//			int ali=1;
-						//The error here is because getNumOfTransformations return 2 while we do not have enough mapping in the mappingset r
-					//	cout<<transformationSet->getNumOfTransformations(r)<<endl;
-					//	cout<<r<<endl;
-					//	cout<<t<<endl;
-					//	cout<<ms->getNumOfMappings()<<endl;
-					//	cout<<abc<<endl;
-	//abc->printDetails();
-	//				;
-//}
-	//				catch(...)
-		//							{
-		//								int a=1;
-			//						}
+				mol1= ms->get(0)->getMolecule();
 				if (mol1->hasVisitedForProductCheck != true)
 				{
-				mol1->hasVisitedForProductCheck = true;
-//				mol1->printDetails();
-				reactantMols.push_back(mol1);
+					mol1->hasVisitedForProductCheck = true;
+					reactantMols.push_back(mol1);
 				}
-
-			reactantMolsContainer.push_back(reactantMols);
 
 			//Here we walk through the molecule and we compare it with Tempelate if they matched we store both Tempelate and actual molecule. So after this step we know that A in A.B->A+B
 			//matched to which molecule(we have the pointer)
-			for (list <Molecule *>::iterator it= reactantMols.begin(); it!=reactantMols.end(); it++){
-//				reactantTemplates[r]->printDetails();
+			for (list <Molecule *>::iterator it= reactantMols.begin(); it!=reactantMols.end(); it++)
+			{
 				reactantTemplates[r]->compare2((*it),ms,productsCheckReactMols,templatetMolsReactants);
-
 			}
-
-			////cout<<"BBB2 r:"<<r<<"  t:"<<t<<"  ";mypause(-1);
-			//			if(transformations[r].at(t)->getType()==(int)TransformationFactory::REMOVE )
-			//			{	// handle deletions
-			////cout<<"BBB2-1 r:"<<r<<"  t:"<<t<<"  "; mypause(-1);
-			//				if (!testmode) {
-			//					Molecule * mol = ms->get(t)->getMolecule();
-			//					if ( transformations[r].at(t)->getRemovalType()==(int)TransformationFactory::COMPLETE_SPECIES_REMOVAL )
-			//					{	// complex deletion: flag connected molecules for deletion
-			//						mol->traverseBondedNeighborhood(deleteList,ReactionClass::NO_LIMIT);
-			//					}
-			//					else
-			//					{	// molecule deletion: flag this molecule for deletion
-			//						deleteList.push_back( mol );
-			//					}
-			//				}
-			//			}
-			//			else
-			//			{	// handle other transforms
-			//				if(transformations[r].at(t)->getType()==(int)TransformationFactory::UNBINDING)
-		//	productsCheckReactMolsContainer.push_back(productsCheckReactMols);
 		}
 	}
 		//Now we have a pointer to all of the molecules in reactant so we need to iterate over product tempelate and try to match each of them with transformed version of our molecule
@@ -1057,15 +993,6 @@ bool ReactionClass::checkReaction()   //clone reactants
 		}
 	//	return result;
 	}
-
-
-
-
-
-
-
-
-
 	//razi: cleanup
 	//delete test molecules and mappings
 	for(unsigned int k=0; k<n_reactants; k++){
@@ -1087,7 +1014,11 @@ bool ReactionClass::checkReaction()   //clone reactants
 			for (list <Molecule *>::iterator jj=AllcopyMs[k].begin(); jj!=AllcopyMs[k].end();jj++){
 				if (*jj){
 					//if (verbose) cout<<"deleting one copy molecule:" << (*jj)->getUniqueID()<<" for reactant:"<<k<<endl;
-					try{delete (*jj);}	catch (...){ cout<<"Unknown Error when Firing RHS reaction!";}
+					try{
+						(*jj)->hasVisitedForProductCheck=false;
+						delete (*jj);
+						}
+						catch (...){ cout<<"Unknown Error when Firing RHS reaction!";}
 				}
 				//else {if (verbose)cout<<"  null pointer, no molecule is deleted"<<endl; mypause(100);}
 			}
