@@ -693,6 +693,7 @@ Molecule::Molecule(Molecule &obj){ //const Molecule &obj
 
 	hasVisitedMolecule=obj.hasVisitedMolecule;
 	hasEvaluatedMolecule=obj.hasEvaluatedMolecule;
+	hasVisitedForProductCheck=obj.hasVisitedForProductCheck;
 	static const int NOSTATE = -1;
 	static const int NOBOND = 0;
 	static const int NOINDEX = -1;
