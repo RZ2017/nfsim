@@ -900,30 +900,30 @@ bool ReactionClass::checkReaction()   //clone reactants
 			}
 		result =resall;
 		// This part is supposed to handle A(s!1).A(s!1)->A(s).A(s)
-		if (n_productTemplates==1 && result)
-		{
-		productsCheckproductMolsList.sort();
+		// if (n_productTemplates==1 && result)
+		// {
+		// productsCheckproductMolsList.sort();
 
-		productsCheckproductMolsList.unique();
-		int k=0;
-		for (list <Molecule *>::iterator it= productsCheckproductMolsList.begin(); it!=productsCheckproductMolsList.end(); it++){
-			for (list <Molecule *>::iterator it1= productsCheckReactMols.begin(); it1!=productsCheckReactMols.end(); it1++){
-				if((*it)==(*it1))
-				{
-					k++;
-					continue;
-				}
-			}
-		}
-		if(productsCheckproductMolsList.size()!=productsCheckReactMols.size())
-		{
-			result= false;
-		}
-		if(k!=productsCheckproductMolsList.size())
-		{
-			result =false;
-		}
-		}
+		// productsCheckproductMolsList.unique();
+		// int k=0;
+		// for (list <Molecule *>::iterator it= productsCheckproductMolsList.begin(); it!=productsCheckproductMolsList.end(); it++){
+		// 	for (list <Molecule *>::iterator it1= productsCheckReactMols.begin(); it1!=productsCheckReactMols.end(); it1++){
+		// 		if((*it)==(*it1))
+		// 		{
+		// 			k++;
+		// 			continue;
+		// 		}
+		// 	}
+		// }
+		// if(productsCheckproductMolsList.size()!=productsCheckReactMols.size())
+		// {
+		// 	result= false;
+		// }
+		// if(k!=productsCheckproductMolsList.size())
+		// {
+		// 	result =false;
+		// }
+		// }
 	// Now it is time to check ring connection
 		if(result && n_productTemplates>1)
 		{
